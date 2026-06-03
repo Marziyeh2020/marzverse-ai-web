@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Particles Swarm Export</title>
+    <style>body { margin: 0; overflow: hidden; background: radial-gradient(circle at center, #1A1A1A 0%, #111111 100%); }</style>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        // CONFIG
+        const COUNT = 20000;
+        const SPEED_MULT = 1;
+        const AUTO_SPIN = true;
+
+        // SETUP
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x111111, 0.005);
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 0, 100);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = AUTO_SPIN;
+        controls.autoRotateSpeed = 2.0;
+
+        // POST PROCESSING
+        const composer = new EffectComposer(renderer);
+        composer.addPass(new RenderPass(scene, camera));
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+        bloomPass.strength = 1.2; bloomPass.radius = 0.5; bloomPass.threshold = 0.1;
+        composer.addPass(bloomPass);
+
+        // SWARM OBJECTS
+        const dummy = new THREE.Object3D();
+        const color = new THREE.Color();
+        const target = new THREE.Vector3();
+        const pColor = new THREE.Color(); // Kept for safety, for potential references
+        
+        // INSTANCED MESH
+        const geometry = new THREE.TetrahedronGeometry(0.25);
+        const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        
+        const instancedMesh = new THREE.InstancedMesh(geometry, material, COUNT);
+        instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        scene.add(instancedMesh);
+
+        // DATA ARRAYS
+        const positions = [];
+        for(let i=0; i<COUNT; i++) {
+            positions.push(new THREE.Vector3((Math.random()-0.5)*100, (Math.random()-0.5)*100, (Math.random()-0.5)*100));
+            instancedMesh.setColorAt(i, color.setHex(0x00ff88)); // Init Color
+        }
+
+        // CONTROL STUBS
+        const PARAMS = {"scale":45,"activity":2.5,"separation":5,"complexity":8};
+        const addControl = (id, label, min, max, val) => {
+            return PARAMS[id] !== undefined ? PARAMS[id] : val;
+        };
+        const setInfo = () => {};
+        const annotate = () => {};
+
+        // ANIMATION LOOP
+        const clock = new THREE.Clock();
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            const time = clock.getElapsedTime() * SPEED_MULT;
+            
+            // Shader Time Update
+            if(material.uniforms && material.uniforms.uTime) {
+                material.uniforms.uTime.value = time;
+            }
+
+            controls.update();
+
+            // SWARM LOGIC
+            const count = COUNT; // Alias for user code compatibility
+            for(let i=0; i<COUNT; i++) {
+                 // USER CODE INJECTION START
+                 const earthRadius = 40;
+                 
+                 let x, y, z;
+                 let currentHue, saturation, lightness;
+
+                 if (i < 15000) {
+                     // 1. EARTH SURFACE (0 to 14,999) - Fibonacci Sphere
+                     const pSurface = i / 15000;
+                     const goldenRatio = 1.61803398875;
+                     const cosVal = 1.0 - 2.0 * pSurface;
+                     const theta = Math.acos(cosVal);
+                     const phi = 2.0 * Math.PI * i / goldenRatio;
+                     
+                     x = earthRadius * Math.sin(theta) * Math.cos(phi);
+                     y = earthRadius * Math.sin(theta) * Math.sin(phi);
+                     z = earthRadius * Math.cos(theta);
+                     
+                     // Procedural continents using sine waves (pseudo-noise)
+                     const noise = Math.sin(x * 0.1) * Math.cos(y * 0.1) + Math.sin(z * 0.15) + Math.cos(x * 0.05 + y * 0.05);
+                     
+                     if (noise > 0.3) {
+                         // Landmass: Dense, bright neon green
+                         currentHue = 0.42; // ~150 degrees (neon green)
+                         saturation = 1.0;
+                         lightness = 0.6 + Math.random() * 0.4;
+                     } else {
+                         // Ocean/Atmosphere: sparse, pushed slightly in, dark green/black
+                         x *= 0.98;
+                         y *= 0.98;
+                         z *= 0.98;
+                         currentHue = 0.42;
+                         saturation = 0.5;
+                         lightness = 0.1 + Math.random() * 0.1;
+                     }
+                     
+                     // Add subtle rotation to the earth independent of camera
+                     const spin = time * 0.1;
+                     const tx = x * Math.cos(spin) - z * Math.sin(spin);
+                     const tz = x * Math.sin(spin) + z * Math.cos(spin);
+                     x = tx; z = tz;
+                     
+                     target.set(x, y, z);
+                 } 
+                 else if (i < 18000) {
+                     // 2. ORBITING SATELLITES / DATA RINGS (15,000 to 17,999)
+                     const ringIndex = i % 3;
+                     const ringRadius = earthRadius * (1.2 + ringIndex * 0.15);
+                     const ringSpeed = 0.2 + ringIndex * 0.1;
+                     const angle = (i / 1000) * Math.PI * 2 + time * ringSpeed;
+                     
+                     // Tilt the rings
+                     const tiltX = (ringIndex === 0) ? 0.5 : (ringIndex === 1) ? -0.3 : 0.8;
+                     const tiltZ = (ringIndex === 0) ? -0.2 : (ringIndex === 1) ? 0.7 : -0.5;
+                     
+                     const bx = Math.cos(angle) * ringRadius;
+                     const by = (Math.sin(angle) * ringRadius * tiltX);
+                     const bz = Math.sin(angle) * ringRadius * Math.cos(tiltZ);
+                     
+                     currentHue = (i % 10 === 0) ? 0.0 : 0.42; // Occasional white sparks
+                     saturation = (currentHue === 0.0) ? 0.0 : 1.0;
+                     lightness = (currentHue === 0.0) ? 1.0 : 0.6;
+                     
+                     target.set(bx, by, bz);
+                 }
+                 else {
+                     // 3. GLOBAL NETWORK ROUTES / DATA STREAMS (18,000 to 19,999)
+                     const routeIndex = Math.floor((i - 18000) / 50); // 40 distinct routes, 50 particles each
+                     const pRoute = ((i - 18000) % 50) / 50; // 0.0 to 1.0 along the route
+                     
+                     // Generate stable pseudo-random endpoints for each route
+                     const seed1 = routeIndex * 123.456;
+                     const seed2 = routeIndex * 987.654;
+                     
+                     const phi1 = Math.acos(1.0 - 2.0 * (seed1 % 1));
+                     const theta1 = 2.0 * Math.PI * (seed2 % 1);
+                     
+                     const phi2 = Math.acos(1.0 - 2.0 * ((seed1 * 1.5) % 1));
+                     const theta2 = 2.0 * Math.PI * ((seed2 * 1.5) % 1);
+                     
+                     const p1 = new THREE.Vector3(
+                         Math.sin(phi1) * Math.cos(theta1),
+                         Math.sin(phi1) * Math.sin(theta1),
+                         Math.cos(phi1)
+                     ).multiplyScalar(earthRadius);
+                     
+                     const p2 = new THREE.Vector3(
+                         Math.sin(phi2) * Math.cos(theta2),
+                         Math.sin(phi2) * Math.sin(theta2),
+                         Math.cos(phi2)
+                     ).multiplyScalar(earthRadius);
+                     
+                     // Arc interpolation
+                     const midPoint = p1.clone().add(p2).multiplyScalar(0.5).normalize().multiplyScalar(earthRadius * 1.3);
+                     
+                     // Quadratic bezier interpolation
+                     const tPoint = pRoute;
+                     const oneMinusT = 1.0 - tPoint;
+                     
+                     const bx = oneMinusT * oneMinusT * p1.x + 2 * oneMinusT * tPoint * midPoint.x + tPoint * tPoint * p2.x;
+                     const by = oneMinusT * oneMinusT * p1.y + 2 * oneMinusT * tPoint * midPoint.y + tPoint * tPoint * p2.y;
+                     const bz = oneMinusT * oneMinusT * p1.z + 2 * oneMinusT * tPoint * midPoint.z + tPoint * tPoint * p2.z;
+                     
+                     // Animate pulses along the route
+                     const pulse = (Math.sin(pRoute * Math.PI * 10 - time * 5) > 0.8) ? 1.0 : 0.0;
+                     
+                     // Apply global Earth rotation so routes rotate with the planet
+                     const spin = time * 0.1;
+                     const tx = bx * Math.cos(spin) - bz * Math.sin(spin);
+                     const tz = bx * Math.sin(spin) + bz * Math.cos(spin);
+                     
+                     currentHue = 0.42;
+                     saturation = 1.0;
+                     lightness = 0.2 + pulse * 0.8;
+                     
+                     target.set(tx, by, tz);
+                 }
+                 
+                 color.setHSL(currentHue, saturation, lightness);
+                 // USER CODE INJECTION END
+
+                 // LERP & UPDATE
+                 positions[i].lerp(target, 0.1);
+                 dummy.position.copy(positions[i]);
+                 dummy.updateMatrix();
+                 instancedMesh.setMatrixAt(i, dummy.matrix);
+                 instancedMesh.setColorAt(i, color); // Fix: Use 'color' which user modifies
+            }
+            instancedMesh.instanceMatrix.needsUpdate = true;
+            instancedMesh.instanceColor.needsUpdate = true;
+
+            composer.render();
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
