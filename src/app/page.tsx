@@ -104,6 +104,14 @@ export default function Home() {
       className="relative w-full min-h-screen text-[#FFFFFF] font-sans selection:bg-[#D9D9D9]/30"
       style={{ background: "radial-gradient(circle at center, #050505 0%, #000000 100%)" }}
     >
+      {/* BUGFIX: Moved Canvas outside of motion.div to ensure position: fixed works relative to viewport */}
+      <div className="fixed inset-0 z-0 pointer-events-auto">
+        <ErrorBoundary fallback={<div className="absolute inset-0 bg-black/50" />}>
+          <HeroAmbientEffects />
+          <CinematicEarth />
+        </ErrorBoundary>
+      </div>
+
       <motion.div
         key="content"
         initial={{ opacity: 0 }}
@@ -119,13 +127,6 @@ export default function Home() {
             />
             <FullscreenContact isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
             <CinematicCursor />
-            {/* BUGFIX: Canvas wrapper gets pointer-events-auto */}
-            <div className="fixed inset-0 z-0 pointer-events-auto">
-              <ErrorBoundary fallback={<div className="absolute inset-0 bg-black/50" />}>
-                <HeroAmbientEffects />
-                <CinematicEarth />
-              </ErrorBoundary>
-            </div>
             
             <Navbar onOpenMenu={() => setIsMenuOpen(true)} />
             

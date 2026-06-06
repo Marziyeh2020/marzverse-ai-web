@@ -226,13 +226,13 @@ function ParticleGlobe({
     uPrimaryColor: { value: primaryColor },
     uHighlightColor: { value: highlightColor },
     uCenterColor: { value: centerColor },
-    uMobileMultiplier: { value: isMobile ? 10.0 : 1.0 }
+    uMobileMultiplier: { value: isMobile ? 4.0 : 1.0 }
   }), [primaryColor, highlightColor, centerColor]); // Removed isMobile from dependency array to avoid recreating uniforms object
 
   // Explicitly update mobile multiplier when it changes
   useEffect(() => {
     if (shaderRef.current) {
-      shaderRef.current.uniforms.uMobileMultiplier.value = isMobile ? 10.0 : 1.0;
+      shaderRef.current.uniforms.uMobileMultiplier.value = isMobile ? 4.0 : 1.0;
     }
   }, [isMobile]);
 
