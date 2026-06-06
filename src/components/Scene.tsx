@@ -18,7 +18,7 @@ function InstancedParticleCloud() {
     const temp = [];
     for (let i = 0; i < particleCount; i++) {
       // Size distribution (same heavy weight to tiny)
-      const randSize = Math.random();
+      const randSize = Math.abs(Math.sin(i * 12.9898));
       let baseSize = 0.005; 
       if (randSize > 0.99) baseSize = 0.08; // Adjusted Extra Large to be slightly bigger relative to huge object
       else if (randSize > 0.97) baseSize = 0.05; 
@@ -26,24 +26,24 @@ function InstancedParticleCloud() {
       else if (randSize > 0.75) baseSize = 0.018; 
       else if (randSize > 0.50) baseSize = 0.01; 
       
-      const size = baseSize + Math.random() * (baseSize * 0.5);
+      const size = baseSize + Math.abs(Math.cos(i * 78.233)) * (baseSize * 0.5);
 
       // Bridge layout: distributed along X axis (-25 to 25)
-      const startX = (Math.random() - 0.5) * 50; 
+      const startX = (Math.sin(i * 45.123)) * 25; 
       
       // Z spread: width of the bridge
       // Denser in the middle of the bridge, sparse on edges
-      const zOffset = (Math.pow(Math.random(), 2) * 6) * (Math.random() > 0.5 ? 1 : -1); 
+      const zOffset = (Math.pow(Math.abs(Math.cos(i * 32.456)), 2) * 6) * (Math.sin(i * 88.3) > 0 ? 1 : -1); 
       
       // Y noise: vertical thickness of the bridge
-      const yNoise = (Math.pow(Math.random(), 2) * 3) * (Math.random() > 0.5 ? 1 : -1);
+      const yNoise = (Math.pow(Math.abs(Math.sin(i * 11.234)), 2) * 3) * (Math.cos(i * 55.678) > 0 ? 1 : -1);
 
       // Flow speed along the bridge
-      const flowSpeed = (0.2 + Math.random() * 1.5) * (Math.random() > 0.5 ? 1 : -1);
+      const flowSpeed = (0.2 + Math.abs(Math.sin(i * 22.345)) * 1.5) * (Math.sin(i * 33.456) > 0 ? 1 : -1);
       
-      const rotationSpeedX = (Math.random() - 0.5) * 2;
-      const rotationSpeedY = (Math.random() - 0.5) * 2;
-      const phase = Math.random() * Math.PI * 2;
+      const rotationSpeedX = (Math.cos(i * 44.567)) * 2;
+      const rotationSpeedY = (Math.sin(i * 55.678)) * 2;
+      const phase = Math.abs(Math.cos(i * 66.789)) * Math.PI * 2;
 
       temp.push({ currentX: startX, zOffset, yNoise, size, flowSpeed, rotationSpeedX, rotationSpeedY, phase });
     }

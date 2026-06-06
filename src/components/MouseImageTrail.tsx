@@ -42,12 +42,13 @@ export default function MouseImageTrail() {
       if (distance > 100) { // Spacing between images
         lastMousePos.current = { x: e.clientX, y: e.clientY };
 
+        const newId = idCounter.current++;
         const newImage: TrailImage = {
-          id: idCounter.current++,
+          id: newId,
           x: e.clientX,
           y: e.clientY,
           imgSrc: images[imageIndex.current],
-          rotation: (Math.random() - 0.5) * 30, // Random rotation between -15 and 15 degrees
+          rotation: (Math.sin(newId * 12.9898)) * 15, // Deterministic pseudo-random rotation
         };
 
         // Next image in array

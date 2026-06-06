@@ -23,14 +23,14 @@ export default function OrangeParticles() {
   const springY = useSpring(mouseY, { damping: 50, stiffness: 100 });
 
   useEffect(() => {
-    // Generate static random particles on mount to avoid hydration mismatch
+    // Generate static deterministic particles on mount to avoid hydration mismatch
     const generated: Particle[] = Array.from({ length: 15 }).map((_, i) => ({
       id: i,
-      x: Math.random() * 100, // percentage
-      y: Math.random() * 100, // percentage
-      size: Math.random() * 3 + 1, // 1px to 4px
-      opacity: Math.random() * 0.4 + 0.1, // 0.1 to 0.5 opacity (subtle)
-      speedMultiplier: Math.random() * 0.05 + 0.01,
+      x: Math.abs(Math.sin(i * 12.9898)) * 100, // percentage
+      y: Math.abs(Math.cos(i * 78.233)) * 100, // percentage
+      size: Math.abs(Math.sin(i * 45.123)) * 3 + 1, // 1px to 4px
+      opacity: Math.abs(Math.cos(i * 32.456)) * 0.4 + 0.1, // 0.1 to 0.5 opacity (subtle)
+      speedMultiplier: Math.abs(Math.sin(i * 88.3)) * 0.05 + 0.01,
     }));
     setParticles(generated);
 

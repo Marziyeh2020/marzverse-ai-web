@@ -109,6 +109,9 @@ export default function Home() {
       className="relative w-full min-h-screen text-[#FFFFFF] font-sans selection:bg-[#D9D9D9]/30"
       style={{ background: "radial-gradient(circle at center, #050505 0%, #000000 100%)" }}
     >
+      <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center text-xs font-bold py-1 z-[9999] pointer-events-none">
+        HYDRATION FIX APPLIED
+      </div>
       <OnScreenLogger />
       <motion.div
         key="content"
@@ -494,16 +497,16 @@ function HeroAmbientEffects() {
           key={i}
           initial={{ 
             opacity: 0, 
-            y: Math.random() * 1000 - 500,
-            x: Math.random() * 1000 - 500 
+            y: Math.sin(i * 12.9898) * 500,
+            x: Math.cos(i * 78.233) * 500 
           }}
           animate={{ 
             opacity: [0, 0.4, 0],
-            y: `+=${Math.random() * 100 - 50}`,
-            x: `+=${Math.random() * 100 - 50}` 
+            y: `+=${Math.sin(i * 45.123) * 50}`,
+            x: `+=${Math.cos(i * 32.456) * 50}` 
           }}
           transition={{ 
-            duration: Math.random() * 8 + 8,
+            duration: Math.abs(Math.sin(i * 88.3)) * 8 + 8,
             repeat: Infinity,
             ease: "linear"
           }}

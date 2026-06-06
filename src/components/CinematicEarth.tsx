@@ -177,7 +177,7 @@ function ParticleGlobe({
       p[i * 3] = Math.cos(theta) * radiusAtY * radius;
       p[i * 3 + 1] = y * radius;
       p[i * 3 + 2] = Math.sin(theta) * radiusAtY * radius;
-      r[i] = Math.random();
+      r[i] = Math.abs(Math.sin(i * 12.9898));
     }
     console.log("[MARZVERSE] Particles initialized");
     logToScreen("PARTICLES_INITIALIZED");
