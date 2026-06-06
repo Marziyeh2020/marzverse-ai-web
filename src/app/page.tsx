@@ -23,24 +23,24 @@ export default function Home() {
     logToScreen("LOADER_STARTED");
     console.log("[MARZVERSE] Loader started");
 
-    // Lenis Disabled for debugging mobile freeze
-    // let lenis: any = null;
-    // try {
-    //   lenis = new Lenis({
-    //     duration: 1.5,
-    //     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    //     smoothWheel: true,
-    //   });
-    //   lenisRef.current = lenis;
+    // Initialize Lenis Smooth Scroll
+    let lenis: any = null;
+    try {
+      lenis = new Lenis({
+        duration: 1.5,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+      });
+      lenisRef.current = lenis;
 
-    //   function raf(time: number) {
-    //     lenis?.raf(time);
-    //     requestAnimationFrame(raf);
-    //   }
-    //   requestAnimationFrame(raf);
-    // } catch (e) {
-    //   console.warn("Lenis initialization failed", e);
-    // }
+      function raf(time: number) {
+        lenis?.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+    } catch (e) {
+      console.warn("Lenis initialization failed", e);
+    }
 
     // Short cinematic loader for 3D initialization
     const timer = setTimeout(() => {
@@ -113,24 +113,26 @@ export default function Home() {
         HYDRATION FIX APPLIED
       </div>
       <OnScreenLogger />
-      <div
+      <motion.div
         key="content"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 2, ease: "easeOut" }}
         className="relative w-full flex flex-col"
       >
-            {/* <FullscreenMenu 
+            <FullscreenMenu 
               isOpen={isMenuOpen} 
               onClose={() => setIsMenuOpen(false)} 
               onNavigate={handleNav}
               onOpenContact={() => { setIsMenuOpen(false); setTimeout(() => setIsContactOpen(true), 800); }}
             />
             <FullscreenContact isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
-            <CinematicCursor /> */}
-            
+            <CinematicCursor />
             {/* BUGFIX: Canvas wrapper gets pointer-events-auto */}
             <div className="fixed inset-0 z-0 pointer-events-auto">
               <ErrorBoundary fallback={<div className="absolute inset-0 bg-black/50" />}>
                 <HeroAmbientEffects />
-                {/* <CinematicEarth /> */}
+                <CinematicEarth />
               </ErrorBoundary>
             </div>
             
@@ -147,8 +149,8 @@ export default function Home() {
             <div className="pointer-events-auto"><Footer /></div>
             
             {/* Global Floating Chatbot */}
-            {/* <div className="pointer-events-auto"><Chatbot /></div> */}
-          </div>
+            <div className="pointer-events-auto"><Chatbot /></div>
+          </motion.div>
     </main>
   );
 }
@@ -197,9 +199,9 @@ function FullscreenMenu({ isOpen, onClose, onNavigate, onOpenContact }: { isOpen
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 1 }}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 2, ease: [0.25, 1, 0.5, 1] }}
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#020202]/80 backdrop-blur-[50px] overflow-hidden"
         >
@@ -213,7 +215,7 @@ function FullscreenMenu({ isOpen, onClose, onNavigate, onOpenContact }: { isOpen
 
           {/* Close Button */}
           <motion.div 
-            initial={{ opacity: 1 }}
+            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 1 }}
             className="absolute top-8 right-8 md:top-16 md:right-16 z-10"
@@ -230,9 +232,9 @@ function FullscreenMenu({ isOpen, onClose, onNavigate, onOpenContact }: { isOpen
             
             {/* Social Links */}
             <motion.div
-              initial={{ opacity: 1, y: 40 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 1, y: -20 }}
+              exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 2, delay: 0.5 + menuItems.length * 0.2, ease: [0.25, 1, 0.5, 1] }}
               className="mt-8 flex flex-col items-center gap-6"
             >
@@ -259,9 +261,9 @@ function FullscreenMenu({ isOpen, onClose, onNavigate, onOpenContact }: { isOpen
 function MenuLink({ item, action, index }: { item: string; action: () => void; index: number; }) {
   return (
     <motion.div
-      initial={{ opacity: 1, y: 40 }}
+      initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 1, y: -20 }}
+      exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 2, delay: 0.5 + index * 0.2, ease: [0.25, 1, 0.5, 1] }}
       className="group cursor-pointer relative"
       onClick={action}
@@ -276,7 +278,7 @@ function MenuLink({ item, action, index }: { item: string; action: () => void; i
       {/* Soft Hover Glow Response */}
       <motion.div
         variants={{
-          initial: { opacity: 1 },
+          initial: { opacity: 0 },
           hover: { opacity: 1 }
         }}
         initial="initial"
@@ -308,20 +310,24 @@ function HeroIntro({ onEnter }: { onEnter: () => void }) {
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
         >
           <motion.h1 
-            initial={{ opacity: 1, y: 20 }}
-            className="text-6xl md:text-8xl lg:text-[10rem] font-bold tracking-tighter leading-[0.85] uppercase"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}
+            className="text-5xl md:text-7xl lg:text-9xl font-extralight tracking-widest mb-6 uppercase leading-[1.1]"
           >
             Marzverse
           </motion.h1>
           
           <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 0.6 }}
             className="text-sm md:text-base font-light tracking-[0.5em] uppercase text-[#D9D9D9] mb-2"
           >
             <span className="text-[#FF8A00]">AI</span> Systems
           </motion.p>
           <motion.p 
-            initial={{ opacity: 1, y: 10 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 0.8 }}
             className="text-xs font-light tracking-[0.3em] uppercase text-[#BFBFBF]"
@@ -340,7 +346,7 @@ function ImmersiveTransition() {
       <div className="sticky top-0 h-screen w-full flex items-center px-12 md:px-24">
         <div className="max-w-4xl">
           <motion.div
-            initial={{ opacity: 1, x: -50 }}
+            initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: false, margin: "-20%" }}
             transition={{ duration: 2.5, ease: [0.25, 1, 0.5, 1] }}
@@ -363,7 +369,7 @@ function FinalExperience({ onContact }: { onContact: () => void }) {
     <section id="final" className="relative w-full h-[180vh]">
       <div className="h-full w-full flex flex-col items-center justify-center text-center px-6">
         <motion.div
-          initial={{ opacity: 1, scale: 0.95, filter: "blur(10px)" }}
+          initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
           whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
           viewport={{ once: false, margin: "-20%" }}
           transition={{ duration: 3, ease: [0.25, 1, 0.5, 1] }}
@@ -390,7 +396,7 @@ function FinalExperience({ onContact }: { onContact: () => void }) {
 function Navbar({ onOpenMenu }: { onOpenMenu: () => void }) {
   return (
     <motion.nav 
-      initial={{ opacity: 1 }}
+      initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 1, duration: 2 }}
       className="fixed top-0 left-0 z-50 w-full px-8 md:px-16 py-8 flex items-center justify-between pointer-events-none"
@@ -453,7 +459,7 @@ function Footer() {
 function Loader() {
   return (
     <motion.div
-      exit={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: 1.5, ease: "easeInOut" }}
       className="fixed inset-0 z-[100] flex items-center justify-center"
       style={{ background: "radial-gradient(circle at center, #050505 0%, #000000 100%)" }}
@@ -490,7 +496,7 @@ function HeroAmbientEffects() {
         <motion.div
           key={i}
           initial={{ 
-            opacity: 1, 
+            opacity: 0, 
             y: Math.sin(i * 12.9898) * 500,
             x: Math.cos(i * 78.233) * 500 
           }}
