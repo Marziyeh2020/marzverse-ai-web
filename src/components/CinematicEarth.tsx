@@ -105,8 +105,11 @@ const vertexShader = `
     
     vec4 mvPosition = viewMatrix * vec4(finalWorldPos, 1.0);
     
-    // Large, highly visible particles (scaled up massively on mobile)
+    // Massive mobile scale boost
     gl_PointSize = ((22.0 * uMobileMultiplier) / -mvPosition.z) * (1.0 + aRandom * 0.5);
+    // Ensure minimum pixel size so it never disappears
+    gl_PointSize = max(gl_PointSize, 4.0);
+    
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -223,8 +226,15 @@ function ParticleGlobe({
     uPrimaryColor: { value: primaryColor },
     uHighlightColor: { value: highlightColor },
     uCenterColor: { value: centerColor },
-    uMobileMultiplier: { value: isMobile ? 3.0 : 1.0 }
-  }), [primaryColor, highlightColor, centerColor, isMobile]);
+    uMobileMultiplier: { value: isMobile ? 10.0 : 1.0 }
+  }), [primaryColor, highlightColor, centerColor]); // Removed isMobile from dependency array to avoid recreating uniforms object
+
+  // Explicitly update mobile multiplier when it changes
+  useEffect(() => {
+    if (shaderRef.current) {
+      shaderRef.current.uniforms.uMobileMultiplier.value = isMobile ? 10.0 : 1.0;
+    }
+  }, [isMobile]);
 
   return (
     <group position={groupPosition}>
