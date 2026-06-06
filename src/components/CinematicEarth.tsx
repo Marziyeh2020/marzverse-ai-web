@@ -302,11 +302,11 @@ function InteractiveScene() {
     logToScreen("SCENE_MOUNTED");
     
     // 1. Mobile Detection & Particle Reduction
-    const checkMobile = () => {
-      setParticleCount(window.innerWidth < 768 ? 2500 : 6000);
+    const updateSize = () => {
+      setParticleCount(window.innerWidth < 768 ? 1 : 6000);
     };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
+    updateSize();
+    window.addEventListener('resize', updateSize);
 
     // 2. Global Touch listeners for Mobile Interaction
     // Since page layout overlays might block pointer-events, this ensures we catch touches anywhere

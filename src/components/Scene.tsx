@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, ContactShadows, useGLTF } from "@react-three/drei";
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState, useEffect } from "react";
 import * as THREE from "three";
 
 // The main model has been removed per user request
@@ -10,7 +10,16 @@ import * as THREE from "three";
 // 2. HIGH PERFORMANCE INSTANCED PARTICLE CLOUD (8000 CUBES)
 function InstancedParticleCloud() {
   const meshRef = useRef<THREE.InstancedMesh>(null);
-  const particleCount = 3500; // Reduced from 8000 for a slightly less crowded look
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const particleCount = isMobile ? 1 : 3500; // Only 1 particle on mobile to save GPU
   
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
@@ -48,7 +57,7 @@ function InstancedParticleCloud() {
       temp.push({ currentX: startX, zOffset, yNoise, size, flowSpeed, rotationSpeedX, rotationSpeedY, phase });
     }
     return temp;
-  }, []);
+  }, [particleCount]);
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
