@@ -10,7 +10,12 @@ import WorkShowcase from "@/components/WorkShowcase";
 import CinematicEarth from "@/components/CinematicEarth";
 import Chatbot from "@/components/Chatbot";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import OnScreenLogger, { logToScreen } from "@/components/OnScreenLogger";
+import FinalExperience from "@/components/FinalExperience";
+import { X as XIcon, Linkedin as LinkedinIcon, Instagram as InstagramIcon } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import HeroAmbientEffects from "@/components/HeroAmbientEffects";
+import ImmersiveTransition from "@/components/ImmersiveTransition";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -20,9 +25,6 @@ export default function Home() {
   const lenisRef = useRef<any>(null);
 
   useEffect(() => {
-    logToScreen("LOADER_STARTED");
-    console.log("[MARZVERSE] Loader started");
-
     // Initialize Lenis Smooth Scroll
     let lenis: any = null;
     try {
@@ -44,8 +46,6 @@ export default function Home() {
 
     // Short cinematic loader for 3D initialization
     const timer = setTimeout(() => {
-      logToScreen("LOADER_COMPLETED");
-      console.log("[MARZVERSE] Loader completed via normal timeout");
       setLoading(false);
     }, 2000);
 
@@ -109,10 +109,6 @@ export default function Home() {
       className="relative w-full min-h-screen text-[#FFFFFF] font-sans selection:bg-[#D9D9D9]/30"
       style={{ background: "radial-gradient(circle at center, #050505 0%, #000000 100%)" }}
     >
-      <div className="fixed top-0 left-0 w-full bg-red-600 text-white text-center text-xs font-bold py-1 z-[9999] pointer-events-none">
-        HYDRATION FIX APPLIED
-      </div>
-      <OnScreenLogger />
       <motion.div
         key="content"
         initial={{ opacity: 0 }}

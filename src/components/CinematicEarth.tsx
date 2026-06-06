@@ -7,7 +7,6 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
 import { useScroll } from 'framer-motion';
 import { useEffect } from 'react';
-import { logToScreen } from "@/components/OnScreenLogger";
 
 // =====================================
 // PARTICLE GLOBE SHADERS
@@ -184,7 +183,6 @@ function ParticleGlobe({
       r[i] = Math.abs(Math.sin(i * 12.9898));
     }
     console.log("[MARZVERSE] Particles initialized");
-    logToScreen("PARTICLES_INITIALIZED");
     return { positions: p, randoms: r };
   }, [radius, particleCount]);
 
@@ -305,7 +303,6 @@ function InteractiveScene() {
 
   useEffect(() => {
     console.log("[MARZVERSE] Scene mounted");
-    logToScreen("SCENE_MOUNTED");
     
     // 1. Mobile Detection & Particle Reduction
     const updateSize = () => {
@@ -409,7 +406,6 @@ export default function CinematicEarth() {
 
   useEffect(() => {
     console.log("[MARZVERSE] Canvas mounted");
-    logToScreen("CANVAS_MOUNTED");
     
     // Check for mobile on mount to set a lower DPR limit (1.25) to avoid crashing older mobile GPUs
     setDpr(window.innerWidth < 768 ? [1, 1.25] : [1, 2]);
