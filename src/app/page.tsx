@@ -117,19 +117,20 @@ export default function Home() {
         key="content"
         className="relative w-full flex flex-col"
       >
-            <FullscreenMenu 
+            {/* <FullscreenMenu 
               isOpen={isMenuOpen} 
               onClose={() => setIsMenuOpen(false)} 
               onNavigate={handleNav}
               onOpenContact={() => { setIsMenuOpen(false); setTimeout(() => setIsContactOpen(true), 800); }}
             />
             <FullscreenContact isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
-            <CinematicCursor />
+            <CinematicCursor /> */}
+            
             {/* BUGFIX: Canvas wrapper gets pointer-events-auto */}
             <div className="fixed inset-0 z-0 pointer-events-auto">
               <ErrorBoundary fallback={<div className="absolute inset-0 bg-black/50" />}>
                 <HeroAmbientEffects />
-                <CinematicEarth />
+                {/* <CinematicEarth /> */}
               </ErrorBoundary>
             </div>
             
@@ -146,7 +147,7 @@ export default function Home() {
             <div className="pointer-events-auto"><Footer /></div>
             
             {/* Global Floating Chatbot */}
-            <div className="pointer-events-auto"><Chatbot /></div>
+            {/* <div className="pointer-events-auto"><Chatbot /></div> */}
           </div>
     </main>
   );
