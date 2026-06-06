@@ -106,9 +106,9 @@ const vertexShader = `
     vec4 mvPosition = viewMatrix * vec4(finalWorldPos, 1.0);
     
     // Massive mobile scale boost
-    gl_PointSize = ((22.0 * uMobileMultiplier) / -mvPosition.z) * (1.0 + aRandom * 0.5);
-    // Ensure minimum pixel size so it never disappears
-    gl_PointSize = max(gl_PointSize, 4.0);
+    float calculatedSize = ((22.0 * uMobileMultiplier) / -mvPosition.z) * (1.0 + aRandom * 0.5);
+    // Ensure minimum pixel size so it never disappears, and cap at 64.0 to prevent mobile GPU driver crashes
+    gl_PointSize = clamp(calculatedSize, 4.0, 64.0);
     
     gl_Position = projectionMatrix * mvPosition;
   }
@@ -238,7 +238,7 @@ function ParticleGlobe({
 
   return (
     <group position={groupPosition}>
-      <points ref={pointsRef}>
+      <points key={particleCount} ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[positions, 3]} />
           <bufferAttribute attach="attributes-aRandom" args={[randoms, 1]} />
