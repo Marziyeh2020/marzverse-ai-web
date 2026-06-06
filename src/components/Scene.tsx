@@ -105,7 +105,7 @@ function InstancedParticleCloud() {
   });
 
   return (
-    <instancedMesh key={particleCount} ref={meshRef} args={[undefined, undefined, particleCount]}>
+    <instancedMesh key={particleCount} ref={meshRef} args={[undefined, undefined, particleCount]} frustumCulled={false}>
       {/* Changed to sphere geometry for round particles, low segment count for performance */}
       <sphereGeometry args={[1, 16, 16]} />
       <meshPhysicalMaterial

@@ -238,7 +238,7 @@ function ParticleGlobe({
 
   return (
     <group position={groupPosition}>
-      <points key={particleCount} ref={pointsRef}>
+      <points key={particleCount} ref={pointsRef} frustumCulled={false}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[positions, 3]} />
           <bufferAttribute attach="attributes-aRandom" args={[randoms, 1]} />
