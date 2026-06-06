@@ -35,7 +35,8 @@ function InstancedParticleCloud() {
       else if (randSize > 0.75) baseSize = 0.018; 
       else if (randSize > 0.50) baseSize = 0.01; 
       
-      const size = baseSize + Math.abs(Math.cos(i * 78.233)) * (baseSize * 0.5);
+      let size = baseSize + Math.abs(Math.cos(i * 78.233)) * (baseSize * 0.5);
+      if (isMobile) size *= 3.0; // Boost size on mobile to compensate for lower count
 
       // Bridge layout: distributed along X axis (-25 to 25)
       const startX = (Math.sin(i * 45.123)) * 25; 
@@ -57,7 +58,7 @@ function InstancedParticleCloud() {
       temp.push({ currentX: startX, zOffset, yNoise, size, flowSpeed, rotationSpeedX, rotationSpeedY, phase });
     }
     return temp;
-  }, [particleCount]);
+  }, [particleCount, isMobile]);
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;

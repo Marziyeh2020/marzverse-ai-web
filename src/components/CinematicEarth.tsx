@@ -20,6 +20,7 @@ const vertexShader = `
   uniform vec3 uPrimaryColor;
   uniform vec3 uHighlightColor;
   uniform vec3 uCenterColor;
+  uniform float uMobileMultiplier;
 
   attribute float aRandom;
 
@@ -105,16 +106,16 @@ const vertexShader = `
     
     vec4 mvPosition = viewMatrix * vec4(finalWorldPos, 1.0);
     
-    // Large, highly visible particles
-    gl_PointSize = (22.0 / -mvPosition.z) * (1.0 + aRandom * 0.5);
+    // Large, highly visible particles (scaled up massively on mobile)
+    gl_PointSize = ((22.0 * uMobileMultiplier) / -mvPosition.z) * (1.0 + aRandom * 0.5);
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
 
-const fragmentShader = `
   varying vec3 vColor;
   varying float vOpacity;
   varying float vDepth;
+  uniform float uMobileMultiplier;
 
   void main() {
     // 1. Crisp Circular Particle Definition
@@ -130,7 +131,7 @@ const fragmentShader = `
     float halo = smoothstep(0.35, 0.12, distToCenter);
     
     // 2. Alpha & Depth Fading
-    float alpha = mix(0.1, 1.0, clamp(vDepth + 0.3, 0.0, 1.0));
+    float alpha = mix(0.1 * uMobileMultiplier, 1.0, clamp(vDepth + 0.3, 0.0, 1.0));
     
     // Focus opacity on the crisp core, giving the particle a defined silhouette
     float finalAlpha = alpha * (core * 0.8 + halo * 0.2);
@@ -152,7 +153,8 @@ function ParticleGlobe({
   highlightColor, 
   centerColor,
   hitPointRef, 
-  isHoveringRef
+  isHoveringRef,
+  isMobile
 }: { 
   radius: number, 
   particleCount: number, 
@@ -161,7 +163,8 @@ function ParticleGlobe({
   highlightColor: THREE.Vector3,
   centerColor: THREE.Vector3,
   hitPointRef: React.MutableRefObject<THREE.Vector3>, 
-  isHoveringRef: React.MutableRefObject<boolean>
+  isHoveringRef: React.MutableRefObject<boolean>,
+  isMobile: boolean
 }) {
   const pointsRef = useRef<THREE.Points>(null);
   const shaderRef = useRef<THREE.ShaderMaterial>(null);
@@ -220,8 +223,9 @@ function ParticleGlobe({
     uForceMultiplier: { value: 0.0 },
     uPrimaryColor: { value: primaryColor },
     uHighlightColor: { value: highlightColor },
-    uCenterColor: { value: centerColor }
-  }), [primaryColor, highlightColor, centerColor]);
+    uCenterColor: { value: centerColor },
+    uMobileMultiplier: { value: isMobile ? 3.0 : 1.0 }
+  }), [primaryColor, highlightColor, centerColor, isMobile]);
 
   return (
     <group position={groupPosition}>
@@ -296,6 +300,7 @@ function InteractiveScene() {
 
   // Responsive particle count for performance
   const [particleCount, setParticleCount] = useState(6000);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     console.log("[MARZVERSE] Scene mounted");
@@ -303,7 +308,9 @@ function InteractiveScene() {
     
     // 1. Mobile Detection & Particle Reduction
     const updateSize = () => {
-      setParticleCount(window.innerWidth < 768 ? 500 : 6000);
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setParticleCount(mobile ? 500 : 6000);
     };
     updateSize();
     window.addEventListener('resize', updateSize);
@@ -368,6 +375,7 @@ function InteractiveScene() {
         centerColor={new THREE.Vector3(0.1, 0.1, 0.1)} // Deep Graphite for core
         hitPointRef={hitPointRef} 
         isHoveringRef={isHoveringRef} 
+        isMobile={isMobile}
       />
 
       {/* Second Sphere (Identical Copy) */}
@@ -380,6 +388,7 @@ function InteractiveScene() {
         centerColor={new THREE.Vector3(0.1, 0.1, 0.1)} // Deep Graphite for core
         hitPointRef={hitPointRef} 
         isHoveringRef={isHoveringRef} 
+        isMobile={isMobile}
       />
 
       <EffectComposer>
