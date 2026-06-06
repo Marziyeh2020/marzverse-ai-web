@@ -113,11 +113,8 @@ export default function Home() {
         HYDRATION FIX APPLIED
       </div>
       <OnScreenLogger />
-      <motion.div
+      <div
         key="content"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 2, ease: "easeOut" }}
         className="relative w-full flex flex-col"
       >
             <FullscreenMenu 
@@ -150,7 +147,7 @@ export default function Home() {
             
             {/* Global Floating Chatbot */}
             <div className="pointer-events-auto"><Chatbot /></div>
-          </motion.div>
+          </div>
     </main>
   );
 }
