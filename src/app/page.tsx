@@ -10,12 +10,7 @@ import WorkShowcase from "@/components/WorkShowcase";
 import CinematicEarth from "@/components/CinematicEarth";
 import Chatbot from "@/components/Chatbot";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import FinalExperience from "@/components/FinalExperience";
-import { X as XIcon, Linkedin as LinkedinIcon, Instagram as InstagramIcon } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import HeroAmbientEffects from "@/components/HeroAmbientEffects";
-import ImmersiveTransition from "@/components/ImmersiveTransition";
-import Footer from "@/components/Footer";
+
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
