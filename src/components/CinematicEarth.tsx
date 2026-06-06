@@ -209,7 +209,9 @@ function ParticleGlobe({
       currentHitPoint.z = THREE.MathUtils.damp(currentHitPoint.z, targetHit.z, 3.0, delta);
 
       // Slower, heavier return smoothness (reduced acceleration)
-      const targetForce = isHoveringRef.current ? 1.0 : 0.0;
+      // BUGFIX: Soften the force dramatically on mobile to prevent them from flying off the screen.
+      const maxForce = isMobile ? 0.35 : 1.0;
+      const targetForce = isHoveringRef.current ? maxForce : 0.0;
       shaderRef.current.uniforms.uForceMultiplier.value = THREE.MathUtils.damp(
         shaderRef.current.uniforms.uForceMultiplier.value, 
         targetForce, 
@@ -327,8 +329,6 @@ function InteractiveScene() {
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length > 0) {
         isHoveringRef.current = true;
-        // Optional: immediately jump to the first touch point if desired, or let it smoothly damp
-        // We'll let it damp smoothly towards the touch center later
       }
     };
     const handleTouchMove = (e: TouchEvent) => {
@@ -339,9 +339,8 @@ function InteractiveScene() {
         const touchX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
         const touchY = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
         
-        // Project onto our Z=50 plane loosely
-        // This is a simplified approximation that avoids heavy raycasting on touchmove
-        hitPointRef.current.set(touchX * 10, touchY * 10, 50); 
+        // BUGFIX: Mobile physics were too harsh. Map touches closer to center and Z=0 instead of deep space.
+        hitPointRef.current.set(touchX * 2.5, touchY * 2.5, 0); 
       }
     };
     const handleTouchEnd = () => {
@@ -360,10 +359,11 @@ function InteractiveScene() {
     };
   }, []);
 
-  // Configuration for Single Iconic Sphere
-  const GLOBE_POS_1 = new THREE.Vector3(2.8, 0, 0); 
-  const GLOBE_POS_2 = new THREE.Vector3(-2.8, 0, 0); // Second identical sphere placed on the left
-  const GLOBE_RADIUS = 1.65; 
+    // Configuration for Single Iconic Sphere
+    // On mobile, bring them closer together to fit the narrow portrait screen
+    const GLOBE_POS_1 = new THREE.Vector3(isMobile ? 1.4 : 2.8, 0, 0); 
+    const GLOBE_POS_2 = new THREE.Vector3(isMobile ? -1.4 : -2.8, 0, 0); // Second identical sphere placed on the left
+    const GLOBE_RADIUS = isMobile ? 1.2 : 1.65; 
 
   return (
     <>
