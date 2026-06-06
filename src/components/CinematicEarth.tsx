@@ -112,6 +112,7 @@ const vertexShader = `
   }
 `;
 
+const fragmentShader = `
   varying vec3 vColor;
   varying float vOpacity;
   varying float vDepth;
