@@ -397,9 +397,9 @@ function Navbar({ onOpenMenu }: { onOpenMenu: () => void }) {
       transition={{ delay: 1, duration: 2 }}
       className="fixed top-0 left-0 z-50 w-full px-8 md:px-16 py-8 flex items-center justify-between pointer-events-none"
     >
-      <div className="text-sm font-light tracking-[0.3em] uppercase mix-blend-difference pointer-events-auto flex items-center gap-4">
-        <img src="/logo.png" alt="Marzverse" className="h-16 w-auto object-contain" />
-        MARZ<span className="text-[#FF8A00]">VERSE</span>
+      <div className="text-xs md:text-sm font-light tracking-[0.2em] md:tracking-[0.3em] uppercase mix-blend-difference pointer-events-auto flex items-center gap-2 md:gap-4 whitespace-nowrap">
+        <img src="/logo.png" alt="Marzverse" className="h-10 md:h-16 w-auto object-contain shrink-0" />
+        <span>MARZ<span className="text-[#FF8A00]">VERSE</span></span>
       </div>
       <div className="pointer-events-auto">
         <PremiumButton onClick={onOpenMenu} className="!px-8 !py-3 bg-transparent !border-transparent">
@@ -442,9 +442,9 @@ function Footer() {
           <InstagramIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
         </a>
       </div>
-      <div className="text-xs font-light tracking-[0.2em] uppercase text-[#BFBFBF] hover:text-[#FFA94D] transition-colors cursor-pointer">
-        hello@marzverse.com
-      </div>
+      <a href="mailto:contact@marzverse.com" className="text-xs font-light tracking-[0.2em] uppercase text-[#BFBFBF] hover:text-[#FFA94D] transition-colors cursor-pointer whitespace-nowrap">
+        contact@marzverse.com
+      </a>
     </footer>
   );
 }
