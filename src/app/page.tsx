@@ -9,39 +9,60 @@ import FullscreenContact from "@/components/FullscreenContact";
 import WorkShowcase from "@/components/WorkShowcase";
 import CinematicEarth from "@/components/CinematicEarth";
 import Chatbot from "@/components/Chatbot";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import OnScreenLogger, { logToScreen } from "@/components/OnScreenLogger";
 
 export default function Home() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const lenisRef = useRef<any>(null);
 
   useEffect(() => {
-    // Initialize Lenis Smooth Scroll
-    const lenis = new Lenis({
-      duration: 1.5,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
-    lenisRef.current = lenis;
+    logToScreen("LOADER_STARTED");
+    console.log("[MARZVERSE] Loader started");
 
-    function raf(time: number) {
-      lenis.raf(time);
+    // Initialize Lenis Smooth Scroll
+    let lenis: any = null;
+    try {
+      lenis = new Lenis({
+        duration: 1.5,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+      });
+      lenisRef.current = lenis;
+
+      function raf(time: number) {
+        lenis?.raf(time);
+        requestAnimationFrame(raf);
+      }
       requestAnimationFrame(raf);
+    } catch (e) {
+      console.warn("Lenis initialization failed", e);
     }
-    requestAnimationFrame(raf);
 
     // Short cinematic loader for 3D initialization
     const timer = setTimeout(() => {
+      logToScreen("LOADER_COMPLETED");
+      console.log("[MARZVERSE] Loader completed via normal timeout");
       setLoading(false);
     }, 2000);
 
+    // Fail-safe timeout in case of major rendering blocking or WebGL failure
+    const failsafe = setTimeout(() => {
+      if (loading) {
+        console.warn("[MARZVERSE] Failsafe triggered: hiding loader after 5s");
+        setLoading(false);
+      }
+    }, 5000);
+
     return () => {
       clearTimeout(timer);
-      lenis.destroy();
+      clearTimeout(failsafe);
+      if (lenis) lenis.destroy();
     };
-  }, []);
+  }, [loading]);
 
   // Intersection Observer for Active Section
   useEffect(() => {
@@ -88,17 +109,14 @@ export default function Home() {
       className="relative w-full min-h-screen text-[#FFFFFF] font-sans selection:bg-[#D9D9D9]/30"
       style={{ background: "radial-gradient(circle at center, #050505 0%, #000000 100%)" }}
     >
-      <AnimatePresence mode="wait">
-        {loading ? (
-           <Loader key="loader" />
-        ) : (
-          <motion.div
-            key="content"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 2, ease: "easeOut" }}
-            className="relative w-full flex flex-col"
-          >
+      <OnScreenLogger />
+      <motion.div
+        key="content"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 2, ease: "easeOut" }}
+        className="relative w-full flex flex-col"
+      >
             <FullscreenMenu 
               isOpen={isMenuOpen} 
               onClose={() => setIsMenuOpen(false)} 
@@ -109,8 +127,10 @@ export default function Home() {
             <CinematicCursor />
             {/* BUGFIX: Canvas wrapper gets pointer-events-auto */}
             <div className="fixed inset-0 z-0 pointer-events-auto">
-              <HeroAmbientEffects />
-              <CinematicEarth />
+              <ErrorBoundary fallback={<div className="absolute inset-0 bg-black/50" />}>
+                <HeroAmbientEffects />
+                <CinematicEarth />
+              </ErrorBoundary>
             </div>
             
             <Navbar onOpenMenu={() => setIsMenuOpen(true)} />
@@ -128,8 +148,6 @@ export default function Home() {
             {/* Global Floating Chatbot */}
             <div className="pointer-events-auto"><Chatbot /></div>
           </motion.div>
-        )}
-      </AnimatePresence>
     </main>
   );
 }

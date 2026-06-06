@@ -6,6 +6,8 @@ import * as THREE from 'three';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
 import { useScroll } from 'framer-motion';
+import { useEffect } from 'react';
+import { logToScreen } from "@/components/OnScreenLogger";
 
 // =====================================
 // PARTICLE GLOBE SHADERS
@@ -27,7 +29,8 @@ const vertexShader = `
 
   void main() {
     // Autonomous, singular intelligence breathing
-    float breathScale = 1.0 + (pow(sin(uTime * 1.2), 4.0) * 0.04);
+    // BUGFIX: Mobile GPUs return NaN if pow() is given a negative base. Use abs() to ensure positive base.
+    float breathScale = 1.0 + (pow(abs(sin(uTime * 1.2)), 4.0) * 0.04);
     
     vec3 basePos = position * breathScale;
     vec4 worldPos = modelMatrix * vec4(basePos, 1.0);
@@ -176,6 +179,8 @@ function ParticleGlobe({
       p[i * 3 + 2] = Math.sin(theta) * radiusAtY * radius;
       r[i] = Math.random();
     }
+    console.log("[MARZVERSE] Particles initialized");
+    logToScreen("PARTICLES_INITIALIZED");
     return { positions: p, randoms: r };
   }, [radius, particleCount]);
 
@@ -289,11 +294,47 @@ function InteractiveScene() {
   const hitPointRef = useRef(new THREE.Vector3(0, 0, 50));
   const isHoveringRef = useRef(false);
 
+  // Responsive particle count for performance
+  const [particleCount, setParticleCount] = useState(6000);
+
+  useEffect(() => {
+    console.log("[MARZVERSE] Scene mounted");
+    logToScreen("SCENE_MOUNTED");
+    
+    // 1. Mobile Detection & Particle Reduction
+    const checkMobile = () => {
+      setParticleCount(window.innerWidth < 768 ? 2500 : 6000);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    // 2. Global Touch listeners for Mobile Interaction
+    // Since page layout overlays might block pointer-events, this ensures we catch touches anywhere
+    const handleTouch = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        isHoveringRef.current = true;
+      }
+    };
+    const handleTouchEnd = () => {
+      isHoveringRef.current = false; // Optional: revert to idle state
+    };
+
+    window.addEventListener('touchstart', handleTouch, { passive: true });
+    window.addEventListener('touchmove', handleTouch, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('touchstart', handleTouch);
+      window.removeEventListener('touchmove', handleTouch);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
+
   // Configuration for Single Iconic Sphere
   const GLOBE_POS_1 = new THREE.Vector3(2.8, 0, 0); 
   const GLOBE_POS_2 = new THREE.Vector3(-2.8, 0, 0); // Second identical sphere placed on the left
   const GLOBE_RADIUS = 1.65; 
-  const PARTICLE_COUNT = 6000;
 
   return (
     <>
@@ -306,7 +347,7 @@ function InteractiveScene() {
       {/* First Sphere (Original) */}
       <ParticleGlobe 
         radius={GLOBE_RADIUS}
-        particleCount={PARTICLE_COUNT}
+        particleCount={particleCount}
         groupPosition={[GLOBE_POS_1.x, GLOBE_POS_1.y, GLOBE_POS_1.z]}
         primaryColor={new THREE.Vector3(0.85, 0.85, 0.85)} // Silver #D9D9D9
         highlightColor={new THREE.Vector3(1.0, 1.0, 1.0)} // Pure White #FFFFFF
@@ -318,7 +359,7 @@ function InteractiveScene() {
       {/* Second Sphere (Identical Copy) */}
       <ParticleGlobe 
         radius={GLOBE_RADIUS}
-        particleCount={PARTICLE_COUNT}
+        particleCount={particleCount}
         groupPosition={[GLOBE_POS_2.x, GLOBE_POS_2.y, GLOBE_POS_2.z]}
         primaryColor={new THREE.Vector3(0.85, 0.85, 0.85)} // Silver #D9D9D9
         highlightColor={new THREE.Vector3(1.0, 1.0, 1.0)} // Pure White #FFFFFF
@@ -340,6 +381,11 @@ function InteractiveScene() {
 }
 
 export default function CinematicEarth() {
+  useEffect(() => {
+    console.log("[MARZVERSE] Canvas mounted");
+    logToScreen("CANVAS_MOUNTED");
+  }, []);
+
   return (
     <div className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
       <Canvas 
