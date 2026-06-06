@@ -72,9 +72,9 @@ export default function Chatbot() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-8 right-8 z-50 w-16 h-16 rounded-full border border-[#FF8A00] bg-black/50 backdrop-blur-md flex items-center justify-center text-[#FF8A00] shadow-[0_0_20px_rgba(255,138,0,0.3)] hover:shadow-[0_0_30px_rgba(255,138,0,0.5)] transition-shadow duration-300 group"
+            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 w-14 h-14 md:w-16 md:h-16 rounded-full border border-[#FF8A00] bg-black/50 backdrop-blur-md flex items-center justify-center text-[#FF8A00] shadow-[0_0_20px_rgba(255,138,0,0.3)] hover:shadow-[0_0_30px_rgba(255,138,0,0.5)] transition-shadow duration-300 group"
           >
-            <Bot className="w-8 h-8 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
+            <Bot className="w-7 h-7 md:w-8 md:h-8 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
           </motion.button>
         )}
       </AnimatePresence>
@@ -87,10 +87,10 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
-            className="fixed bottom-28 right-8 z-50 w-[380px] bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col font-sans"
+            className="fixed bottom-24 md:bottom-28 left-0 right-0 mx-auto md:mx-0 md:left-auto md:right-8 z-50 w-[90vw] md:w-[380px] max-w-[420px] bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col font-sans"
           >
             {/* Header */}
-            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-gradient-to-b from-white/[0.02] to-transparent">
+            <div className="p-4 md:p-5 border-b border-white/10 flex items-center justify-between bg-gradient-to-b from-white/[0.02] to-transparent">
               <div className="flex items-center gap-4">
                 <div className="text-[#FF8A00]">
                   <Bot className="w-6 h-6" strokeWidth={1.5} />
@@ -110,12 +110,12 @@ export default function Chatbot() {
               </button>
             </div>
 
-            <div className="p-5 h-[400px] overflow-y-auto flex flex-col gap-6" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
+            <div className="p-5 md:p-5 h-[50vh] min-h-[350px] max-h-[400px] md:h-[400px] overflow-y-auto flex flex-col gap-8 md:gap-6" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
               
               {messages.length === 1 && (
                 <div>
                   <p className="text-[10px] text-[#BFBFBF] tracking-widest uppercase mb-3 px-1">POPULAR TOPICS</p>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3 md:gap-2">
                     <TopicButton onClick={() => handleTopicClick("Website Development")} icon={<Globe className="w-4 h-4 text-[#FF8A00]" strokeWidth={1.5} />} title="Website Development" desc="Modern websites 1-4 pages" />
                     <TopicButton onClick={() => handleTopicClick("AI Chatbots")} icon={<Bot className="w-4 h-4 text-[#FF8A00]" strokeWidth={1.5} />} title="AI Chatbots" desc="Smart chatbot solutions" />
                     <TopicButton onClick={() => handleTopicClick("AI Automation")} icon={<Zap className="w-4 h-4 text-[#FF8A00]" strokeWidth={1.5} />} title="AI Automation" desc="Automate your business" />
@@ -125,18 +125,18 @@ export default function Chatbot() {
                 </div>
               )}
 
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-5 md:gap-4">
                 {messages.map((msg) => (
                   <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-xl p-4 relative ${msg.role === 'user' ? 'bg-[#FF8A00]/10 border border-[#FF8A00]/20' : 'bg-[#141414] border border-white/5'}`}>
+                    <div className={`max-w-[90%] md:max-w-[85%] rounded-2xl md:rounded-xl p-5 md:p-4 relative ${msg.role === 'user' ? 'bg-[#FF8A00]/10 border border-[#FF8A00]/20' : 'bg-[#141414] border border-white/5'}`}>
                       {msg.role === 'bot' && msg.id === '1' && (
-                        <p className="text-[#FF8A00] font-medium text-sm mb-1">Hello, I'm Marzverse Assistant.</p>
+                        <p className="text-[#FF8A00] font-medium text-sm mb-2 md:mb-1">Hello, I'm Marzverse Assistant.</p>
                       )}
-                      <p className={`text-sm whitespace-pre-wrap ${msg.role === 'user' ? 'text-white' : 'text-[#BFBFBF]'}`}>
+                      <p className={`text-[15px] md:text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'user' ? 'text-white' : 'text-[#BFBFBF]'}`}>
                         {msg.role === 'bot' && msg.id === '1' ? msg.text.split('\n')[1] : msg.text}
                       </p>
                       {msg.role === 'bot' && (
-                        <div className="absolute bottom-4 right-4 w-1 h-1 rounded-full bg-[#FF8A00]"></div>
+                        <div className="absolute bottom-4 right-4 w-1.5 h-1.5 md:w-1 md:h-1 rounded-full bg-[#FF8A00]"></div>
                       )}
                     </div>
                   </div>
@@ -154,7 +154,7 @@ export default function Chatbot() {
             </div>
 
             {/* Input Area */}
-            <div className="p-5 border-t border-white/10 bg-[#0A0A0A]">
+            <div className="p-4 md:p-5 border-t border-white/10 bg-[#0A0A0A]">
               <div className="relative flex items-center">
                 <input 
                   type="text" 
@@ -162,18 +162,18 @@ export default function Chatbot() {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type your question..." 
-                  className="w-full bg-[#141414] border border-white/10 rounded-lg py-3 pl-4 pr-12 text-sm text-white placeholder-[#BFBFBF]/50 focus:outline-none focus:border-[#FF8A00]/50 transition-colors"
+                  className="w-full bg-[#141414] border border-white/10 rounded-lg py-3 md:py-3 pl-4 pr-14 text-[15px] md:text-sm text-white placeholder-[#BFBFBF]/50 focus:outline-none focus:border-[#FF8A00]/50 transition-colors"
                 />
                 <button 
                   onClick={() => handleSend(inputValue)}
                   disabled={isLoading || !inputValue.trim()}
-                  className="absolute right-1.5 w-8 h-8 bg-[#FF8A00] rounded-md flex items-center justify-center text-white hover:bg-[#FF8A00]/90 transition-colors disabled:opacity-50"
+                  className="absolute right-2 w-9 h-9 md:w-8 md:h-8 bg-[#FF8A00] rounded-md flex items-center justify-center text-white hover:bg-[#FF8A00]/90 transition-colors disabled:opacity-50"
                 >
-                  <Send className="w-4 h-4" strokeWidth={1.5} />
+                  <Send className="w-4 h-4 md:w-4 md:h-4" strokeWidth={1.5} />
                 </button>
               </div>
               <div className="mt-3 flex items-center justify-center gap-1.5">
-                <p className="text-[10px] text-[#BFBFBF] tracking-wider">We typically reply instantly.</p>
+                <p className="text-[10px] md:text-[10px] text-[#BFBFBF] tracking-wider">We typically reply instantly.</p>
                 <div className="w-1 h-1 rounded-full bg-[#FF8A00]"></div>
               </div>
             </div>

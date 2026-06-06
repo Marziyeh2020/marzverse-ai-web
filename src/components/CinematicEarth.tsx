@@ -210,7 +210,8 @@ function ParticleGlobe({
 
       // Slower, heavier return smoothness (reduced acceleration)
       // BUGFIX: Soften the force dramatically on mobile to prevent them from flying off the screen.
-      const maxForce = isMobile ? 0.35 : 1.0;
+      // Reduced maxForce even further to 0.15 for very gentle movement
+      const maxForce = isMobile ? 0.15 : 1.0;
       const targetForce = isHoveringRef.current ? maxForce : 0.0;
       shaderRef.current.uniforms.uForceMultiplier.value = THREE.MathUtils.damp(
         shaderRef.current.uniforms.uForceMultiplier.value, 
@@ -228,13 +229,13 @@ function ParticleGlobe({
     uPrimaryColor: { value: primaryColor },
     uHighlightColor: { value: highlightColor },
     uCenterColor: { value: centerColor },
-    uMobileMultiplier: { value: isMobile ? 4.0 : 1.0 }
+    uMobileMultiplier: { value: isMobile ? 0.4 : 1.0 } // 10x smaller than 4.0
   }), [primaryColor, highlightColor, centerColor]); // Removed isMobile from dependency array to avoid recreating uniforms object
 
   // Explicitly update mobile multiplier when it changes
   useEffect(() => {
     if (shaderRef.current) {
-      shaderRef.current.uniforms.uMobileMultiplier.value = isMobile ? 4.0 : 1.0;
+      shaderRef.current.uniforms.uMobileMultiplier.value = isMobile ? 0.4 : 1.0;
     }
   }, [isMobile]);
 

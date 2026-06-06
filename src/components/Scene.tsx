@@ -36,7 +36,7 @@ function InstancedParticleCloud() {
       else if (randSize > 0.50) baseSize = 0.01; 
       
       let size = baseSize + Math.abs(Math.cos(i * 78.233)) * (baseSize * 0.5);
-      if (isMobile) size *= 4.0; // Boost size immensely on mobile to compensate for lower count
+      if (isMobile) size *= 0.4; // 10x smaller than previous 4.0 multiplier for mobile
 
       // Bridge layout: distributed along X axis (-25 to 25)
       const startX = (Math.sin(i * 45.123)) * 25; 
