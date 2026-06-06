@@ -303,30 +303,44 @@ function InteractiveScene() {
     
     // 1. Mobile Detection & Particle Reduction
     const updateSize = () => {
-      setParticleCount(window.innerWidth < 768 ? 1 : 6000);
+      setParticleCount(window.innerWidth < 768 ? 500 : 6000);
     };
     updateSize();
     window.addEventListener('resize', updateSize);
 
     // 2. Global Touch listeners for Mobile Interaction
-    // Since page layout overlays might block pointer-events, this ensures we catch touches anywhere
-    const handleTouch = (e: TouchEvent) => {
+    const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length > 0) {
         isHoveringRef.current = true;
+        // Optional: immediately jump to the first touch point if desired, or let it smoothly damp
+        // We'll let it damp smoothly towards the touch center later
+      }
+    };
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        isHoveringRef.current = true;
+        
+        // Map touch position to normalized device coordinates (-1 to +1)
+        const touchX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+        const touchY = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+        
+        // Project onto our Z=50 plane loosely
+        // This is a simplified approximation that avoids heavy raycasting on touchmove
+        hitPointRef.current.set(touchX * 10, touchY * 10, 50); 
       }
     };
     const handleTouchEnd = () => {
-      isHoveringRef.current = false; // Optional: revert to idle state
+      isHoveringRef.current = false; 
     };
 
-    window.addEventListener('touchstart', handleTouch, { passive: true });
-    window.addEventListener('touchmove', handleTouch, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
-      window.removeEventListener('resize', checkMobile);
-      window.removeEventListener('touchstart', handleTouch);
-      window.removeEventListener('touchmove', handleTouch);
+      window.removeEventListener('resize', updateSize);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
   }, []);
@@ -381,16 +395,21 @@ function InteractiveScene() {
 }
 
 export default function CinematicEarth() {
+  const [dpr, setDpr] = useState<[number, number]>([1, 2]);
+
   useEffect(() => {
     console.log("[MARZVERSE] Canvas mounted");
     logToScreen("CANVAS_MOUNTED");
+    
+    // Check for mobile on mount to set a lower DPR limit (1.25) to avoid crashing older mobile GPUs
+    setDpr(window.innerWidth < 768 ? [1, 1.25] : [1, 2]);
   }, []);
 
   return (
     <div className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
       <Canvas 
         camera={{ position: [0, 0, 5], fov: 45 }}
-        dpr={[1, 2]}
+        dpr={dpr}
       >
         <InteractiveScene />
       </Canvas>

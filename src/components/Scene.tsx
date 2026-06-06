@@ -19,7 +19,7 @@ function InstancedParticleCloud() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const particleCount = isMobile ? 1 : 3500; // Only 1 particle on mobile to save GPU
+  const particleCount = isMobile ? 500 : 3500; // Lightweight but visible cloud on mobile
   
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
@@ -161,10 +161,17 @@ function CinematicRig() {
 }
 
 export default function Scene() {
+  const [dpr, setDpr] = useState<[number, number]>([1, 2]);
+
+  useEffect(() => {
+    // Limit DPR on mobile to max 1.25 to prevent GPU bottleneck
+    setDpr(window.innerWidth < 768 ? [1, 1.25] : [1, 2]);
+  }, []);
+
   return (
     <div className="w-full h-full">
       {/* Pulled camera slightly back (z:11.5) to give the monumental object majestic breathing room */}
-      <Canvas camera={{ position: [0, 0, 11.5], fov: 32 }} dpr={[1, 1.5]} gl={{ antialias: false, powerPreference: "high-performance" }}>
+      <Canvas camera={{ position: [0, 0, 11.5], fov: 32 }} dpr={dpr} gl={{ antialias: false, powerPreference: "high-performance" }}>
         <ambientLight intensity={0.4} />
         <CinematicRig />
         <InstancedParticleCloud />
