@@ -15,14 +15,19 @@ const puppeteer = require('puppeteer');
 
   try {
     await page.goto('http://localhost:3000', { waitUntil: 'networkidle2', timeout: 15000 });
+    const bodyText = await page.evaluate(() => document.body.innerText);
+    console.log('BODY TEXT:', bodyText);
     
-    // Check if body is empty or black
-    const content = await page.content();
-    if (content.includes('MARZVERSE')) {
+    // Take a screenshot to visually verify what is rendered
+    await page.screenshot({ path: 'screenshot.png' });
+    console.log('Screenshot saved to screenshot.png');
+    
+    if (bodyText.includes('Marzverse') || bodyText.includes('MARZVERSE')) {
       console.log('RESULT: PAGE RENDERED');
     } else {
-      console.log('RESULT: PAGE NOT RENDERED. Checking HTML dump:');
-      console.log(content.substring(0, 1000));
+      console.log('RESULT: PAGE NOT RENDERED. Checking body HTML dump:');
+      const bodyHtml = await page.evaluate(() => document.body.innerHTML);
+      console.log(bodyHtml.substring(0, 2000));
     }
   } catch (e) {
     console.error('TEST SCRIPT ERROR:', e);

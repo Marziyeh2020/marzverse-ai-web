@@ -83,7 +83,7 @@ function WorkPanel({ title, desc, videoSrc }: { title: string, desc: string, vid
 
       <div className="relative z-20 flex flex-col md:flex-row justify-between w-full items-start md:items-end gap-8">
         <div>
-          <h3 className="text-3xl md:text-5xl font-extralight tracking-[0.3em] uppercase mb-4 text-[#FFFFFF]">{title}</h3>
+          <h2 className="text-3xl md:text-5xl font-extralight tracking-[0.3em] uppercase mb-4 text-[#FFFFFF]">{title}</h2>
           <p className="text-sm font-light tracking-[0.3em] text-[#D9D9D9] uppercase">{desc}</p>
         </div>
       </div>

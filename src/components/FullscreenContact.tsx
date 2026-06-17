@@ -59,7 +59,7 @@ export default function FullscreenContact({ isOpen, onClose }: { isOpen: boolean
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 2, ease: [0.25, 1, 0.5, 1] }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020202]/90 backdrop-blur-[60px] overflow-hidden"
+          className="fixed inset-0 z-[100] overflow-y-auto bg-[#020202]/90 backdrop-blur-[60px] pointer-events-auto contact-modal-container"
         >
           {/* Ambient Lighting Layer */}
           <motion.div 
@@ -74,15 +74,15 @@ export default function FullscreenContact({ isOpen, onClose }: { isOpen: boolean
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 1 }}
-            className="absolute top-8 right-8 md:top-16 md:right-16 z-10"
+            className="fixed top-6 right-6 md:top-12 md:right-12 z-20"
           >
-            <PremiumButton onClick={onClose} className="!px-8 !py-3 bg-transparent !border-transparent">
+            <PremiumButton onClick={onClose} aria-label="Close contact dialog" className="!px-8 !py-3 bg-transparent !border-transparent">
               Close
             </PremiumButton>
           </motion.div>
           
           {/* Form Content / Success State */}
-          <div className="w-full max-w-2xl px-6 md:px-12 relative z-10 flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="w-full max-w-[90vw] md:max-w-[1200px] mx-auto px-5 md:px-12 pt-24 md:pt-32 pb-24 min-h-screen relative z-10 flex flex-col items-center justify-start">
             <AnimatePresence mode="wait">
               {!isSuccess ? (
                 <motion.div 
@@ -97,34 +97,36 @@ export default function FullscreenContact({ isOpen, onClose }: { isOpen: boolean
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 2, delay: 0.3, ease: [0.25, 1, 0.5, 1] }}
-                    className="text-3xl md:text-5xl font-extralight tracking-[0.2em] uppercase text-white/80 mb-16 text-center"
+                    className="font-extralight tracking-[0.2em] uppercase text-white/80 mb-6 md:mb-10 text-center contact-modal-heading"
                   >
                     Start Your Project
                   </motion.h2>
 
-                  <form className="w-full flex flex-col gap-8" onSubmit={handleSubmit}>
-                    <InputRow delay={0.5}>
+                  <form className="w-full flex flex-col gap-4 md:gap-6" onSubmit={handleSubmit}>
+                    <InputRow delay={0.5} className="w-full min-w-0">
                       <CinematicInput type="text" placeholder="Name" required value={name} onChange={(e) => setName(e.target.value)} />
                     </InputRow>
-                    <InputRow delay={0.6}>
+                    <InputRow delay={0.6} className="w-full min-w-0">
                       <CinematicInput type="email" placeholder="Email" required value={email} onChange={(e) => setEmail(e.target.value)} />
                     </InputRow>
-                    <div className="flex flex-col md:flex-row gap-8 w-full">
-                      <InputRow delay={0.7} className="w-full">
+                    <div className="flex flex-col md:flex-row gap-4 md:gap-6 w-full min-w-0">
+                      <InputRow delay={0.7} className="flex-1 min-w-0 w-full">
                         <CinematicInput type="text" placeholder="Company" value={company} onChange={(e) => setCompany(e.target.value)} />
                       </InputRow>
-                      <InputRow delay={0.8} className="w-full">
+                      <InputRow delay={0.8} className="flex-1 min-w-0 w-full">
                         <CinematicInput type="text" placeholder="Project Type" value={projectType} onChange={(e) => setProjectType(e.target.value)} />
                       </InputRow>
                     </div>
-                    <InputRow delay={0.9}>
+                    <InputRow delay={0.9} className="w-full min-w-0">
                       <textarea 
                         placeholder="Vision / Message" 
+                        aria-label="Vision or Message description"
                         rows={4}
                         required
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        className="w-full bg-transparent border-b border-white/20 px-0 py-4 text-base text-white/80 font-light tracking-[0.1em] placeholder:text-white/20 focus:outline-none focus:border-white/60 transition-colors duration-700 resize-none"
+                        className="w-full min-w-0 bg-transparent border-b border-white/20 px-0 py-3 md:py-4 text-white/80 font-light tracking-[0.1em] placeholder:text-white/20 focus:outline-none focus:border-white/60 transition-colors duration-700 resize-none"
+                        style={{ fontSize: "clamp(14px, 1vw, 18px)" }}
                       />
                     </InputRow>
                     
@@ -132,9 +134,9 @@ export default function FullscreenContact({ isOpen, onClose }: { isOpen: boolean
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 2, delay: 1.1, ease: [0.25, 1, 0.5, 1] }}
-                      className="mt-8 flex justify-center"
+                      className="mt-6 md:mt-8 mb-8 flex justify-center"
                     >
-                      <PremiumButton type="submit" disabled={isSubmitting} className="w-full md:w-auto">
+                      <PremiumButton type="submit" aria-label="Submit project inquiry form" disabled={isSubmitting} className="w-full md:w-auto">
                         {isSubmitting ? "Processing..." : "Submit Inquiry"}
                       </PremiumButton>
                     </motion.div>
@@ -179,7 +181,21 @@ function InputRow({ children, delay, className = "" }: { children: React.ReactNo
   );
 }
 
-function CinematicInput({ type, placeholder, required, value, onChange }: { type: string, placeholder: string, required?: boolean, value?: string, onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
+function CinematicInput({ 
+  type, 
+  placeholder, 
+  required, 
+  value, 
+  onChange,
+  "aria-label": ariaLabel 
+}: { 
+  type: string, 
+  placeholder: string, 
+  required?: boolean, 
+  value?: string, 
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  "aria-label"?: string 
+}) {
   return (
     <input 
       type={type} 
@@ -187,7 +203,9 @@ function CinematicInput({ type, placeholder, required, value, onChange }: { type
       required={required}
       value={value}
       onChange={onChange}
-      className="w-full bg-transparent border-b border-white/20 px-0 py-4 text-base text-white/80 font-light tracking-[0.1em] placeholder:text-white/20 focus:outline-none focus:border-white/60 transition-colors duration-700"
+      aria-label={ariaLabel || placeholder}
+      className="w-full min-w-0 bg-transparent border-b border-white/20 px-0 py-3 md:py-4 text-white/80 font-light tracking-[0.1em] placeholder:text-white/20 focus:outline-none focus:border-white/60 transition-colors duration-700"
+      style={{ fontSize: "clamp(14px, 1vw, 18px)" }}
     />
   );
 }

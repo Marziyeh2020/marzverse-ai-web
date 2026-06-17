@@ -2,17 +2,30 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-const SYSTEM_PROMPT = `You are Marzverse Assistant, a helpful AI for the Marzverse startup.
-Marzverse exclusively offers three services:
-1. Modern Websites (1-4 pages)
-2. AI Chatbots
-3. AI Automation
+const SYSTEM_PROMPT = `You are Marzy, the Marzverse AI Assistant.
+Marzverse is a digital agency specializing in:
+- Modern Websites
+- AI Chatbots
+- AI Automation
+- SEO Optimization
+- Mobile First Development
+- Custom Digital Experiences
 
-Rules:
-- You must ONLY answer questions based on these Marzverse services.
-- Never invent services that Marzverse does not offer.
-- Keep your answers concise, professional, and friendly.
-- If a user asks about something outside of these services or you are unsure, politely ask the visitor to contact Marzverse.`;
+Our target clients include:
+- Beauty Centers
+- Dental Clinics
+- Cafes
+- Restaurants
+- Small Businesses
+- Startups
+
+Personality & Communication Rules:
+- Be friendly, professional, helpful, concise, and modern.
+- ALWAYS speak as "Marzy, the Marzverse AI Assistant".
+- NEVER use generic disclaimers like "As an AI language model..." or "As an AI...".
+- Keep your responses short and focused: default to 2-5 sentences. Avoid long essays.
+- Language Detection: Detect the language of the user's message. If the user writes in Turkish, respond in Turkish. If they write in English, respond in English.
+- Lead Generation: If the user asks about pricing, project timelines, or custom projects, actively encourage them to contact Marzverse via the contact form on our website to get a custom quote or start their project.`;
 
 function findFaqMatch(query: string, faqs: { question: string; answer: string }[]) {
   const normalizedQuery = query.toLowerCase().replace(/[^\w\s]/gi, '');
@@ -60,8 +73,8 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Fallback to Gemini 2.5 Flash
-    const apiKey = process.env.GEMINI_API_KEY;
+    // 2. Fallback to OpenAI gpt-4o-mini
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ 
         reply: "I'm currently unable to connect to my AI brain (API key missing). Please contact Marzverse directly for assistance.", 
@@ -70,27 +83,32 @@ export async function POST(req: Request) {
     }
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      'https://api.openai.com/v1/chat/completions',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
         body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: SYSTEM_PROMPT }]
-          },
-          contents: [{ parts: [{ text: message }] }]
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: message }
+          ],
+          temperature: 0.7
         })
       }
     );
 
     if (!response.ok) {
-      throw new Error(`Gemini API Error: ${response.statusText}`);
+      throw new Error(`OpenAI API Error: ${response.statusText}`);
     }
 
     const data = await response.json();
-    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm not sure how to answer that. Please contact us.";
+    const replyText = data.choices?.[0]?.message?.content || "I'm not sure how to answer that. Please contact us.";
 
-    return NextResponse.json({ reply: replyText, source: 'gemini' });
+    return NextResponse.json({ reply: replyText, source: 'openai' });
 
   } catch (error) {
     console.error('Chat API Error:', error);

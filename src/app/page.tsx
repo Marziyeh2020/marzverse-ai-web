@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
 import Lenis from "lenis";
+import { Zap, Smartphone, Search, PenTool } from "lucide-react";
 import PremiumButton from "@/components/PremiumButton";
 import CinematicCursor from "@/components/CinematicCursor";
 import FullscreenContact from "@/components/FullscreenContact";
@@ -17,10 +18,12 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("hero");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lenisRef = useRef<any>(null);
 
   useEffect(() => {
     // Initialize Lenis Smooth Scroll
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let lenis: any = null;
     try {
       lenis = new Lenis({
@@ -101,7 +104,7 @@ export default function Home() {
 
   return (
     <main 
-      className="relative w-full min-h-screen text-[#FFFFFF] font-sans selection:bg-[#D9D9D9]/30"
+      className="relative w-full max-w-[100vw] overflow-x-clip min-h-screen text-[#FFFFFF] font-sans selection:bg-[#D9D9D9]/30"
       style={{ background: "radial-gradient(circle at center, #050505 0%, #000000 100%)" }}
     >
       {/* BUGFIX: Moved Canvas outside of motion.div to ensure position: fixed works relative to viewport */}
@@ -117,7 +120,7 @@ export default function Home() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 2, ease: "easeOut" }}
-        className="relative w-full flex flex-col"
+        className="relative w-full flex flex-col pointer-events-none"
       >
             <FullscreenMenu 
               isOpen={isMenuOpen} 
@@ -128,7 +131,7 @@ export default function Home() {
             <FullscreenContact isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
             <CinematicCursor />
             
-            <Navbar onOpenMenu={() => setIsMenuOpen(true)} />
+            <Navbar />
             
             {/* BUGFIX: The z-10 wrapper MUST have pointer-events-none, otherwise it acts as an invisible wall blocking the Canvas! */}
             <div className="relative z-10 pointer-events-none">
@@ -143,6 +146,30 @@ export default function Home() {
             {/* Global Floating Chatbot */}
             <div className="pointer-events-auto"><Chatbot /></div>
           </motion.div>
+
+          {/* Screen Reader Accessible SEO Supporting Text */}
+          <div className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>
+            <section>
+              <h2>AI Automation Services</h2>
+              <p>Marzverse designs and integrates cutting-edge AI automation solutions that streamline business workflows, reduce operational overhead, and enhance productivity. Our systems use machine learning and intelligent task routing to handle complex business operations.</p>
+            </section>
+            <section>
+              <h2>AI Chatbot Development</h2>
+              <p>We build custom, intelligent AI chatbots that understand context, answer customer inquiries instantly, and integrate seamlessly with your CRM and databases. Our conversational interfaces provide natural, human-like responses to increase sales and support efficiency.</p>
+            </section>
+            <section>
+              <h2>Modern Website Development</h2>
+              <p>Our modern website development combines high-performance Next.js architectures with clean, responsive, and jaw-dropping cinematic designs. We build fast, secure, and SEO-optimized sites that convert visitors into loyal clients.</p>
+            </section>
+            <section>
+              <h2>Business Process Automation</h2>
+              <p>We automate repetitive tasks and business processes using workflow integrations, connecting your favorite software and AI tools. By optimizing data pipelines and communication flows, we help your business scale automatically.</p>
+            </section>
+            <section>
+              <h2>Digital Experience Design</h2>
+              <p>Marzverse crafts immersive, luxury digital experiences that captivate audiences. We combine WebGL, 3D graphics, smooth scroll animations, and interactive components to tell your brand story and leave a lasting impression.</p>
+            </section>
+          </div>
     </main>
   );
 }
@@ -195,7 +222,11 @@ function FullscreenMenu({ isOpen, onClose, onNavigate, onOpenContact }: { isOpen
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 2, ease: [0.25, 1, 0.5, 1] }}
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#020202]/80 backdrop-blur-[50px] overflow-hidden"
+          id="navigation-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation Menu"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#020202]/80 backdrop-blur-[50px] overflow-hidden pointer-events-auto"
         >
           {/* Ambient Background Layer inside Menu */}
           <motion.div 
@@ -212,7 +243,7 @@ function FullscreenMenu({ isOpen, onClose, onNavigate, onOpenContact }: { isOpen
             transition={{ delay: 1, duration: 1 }}
             className="absolute top-8 right-8 md:top-16 md:right-16 z-10"
           >
-            <PremiumButton onClick={onClose} className="!px-8 !py-3 bg-transparent !border-transparent">
+            <PremiumButton onClick={onClose} aria-label="Close navigation menu" className="!px-8 !py-3 bg-transparent !border-transparent">
               Close
             </PremiumButton>
           </motion.div>
@@ -259,6 +290,15 @@ function MenuLink({ item, action, index }: { item: string; action: () => void; i
       transition={{ duration: 2, delay: 0.5 + index * 0.2, ease: [0.25, 1, 0.5, 1] }}
       className="group cursor-pointer relative"
       onClick={action}
+      role="button"
+      tabIndex={0}
+      aria-label={`Navigate to ${item} section`}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          action();
+        }
+      }}
     >
       <motion.div 
         whileHover={{ x: 30 }}
@@ -291,41 +331,121 @@ function HeroIntro({ onEnter }: { onEnter: () => void }) {
   const y = useTransform(scrollYProgress, [0, 1], [0, 300]);
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
+  const features = [
+    {
+      title: "Fast Performance",
+      desc: "Optimized for speed and smooth user experiences.",
+      Icon: Zap
+    },
+    {
+      title: "Mobile First",
+      desc: "Designed to work beautifully on every device.",
+      Icon: Smartphone
+    },
+    {
+      title: "SEO Ready",
+      desc: "Built with modern search engine best practices.",
+      Icon: Search
+    },
+    {
+      title: "Custom Design",
+      desc: "Tailored experiences crafted for each brand.",
+      Icon: PenTool
+    }
+  ];
+
   return (
     <section id="hero" className="relative w-full h-[180vh] pointer-events-none">
+      <h1 className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>
+        AI Automation, AI Chatbots & Modern Website Development
+      </h1>
       <motion.div 
         style={{ y, opacity }}
-        className="sticky top-0 h-screen w-full flex flex-col items-center justify-center text-center px-6"
+        className="sticky top-0 h-screen w-full flex flex-col justify-center px-6 lg:px-24 items-center lg:items-start text-center lg:text-left"
       >
         <motion.div
           animate={{ y: [0, -4, 0] }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center lg:items-start lg:max-w-[800px] w-full"
         >
-          <motion.h1 
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}
-            className="text-5xl md:text-7xl lg:text-9xl font-extralight tracking-widest mb-6 uppercase leading-[1.1]"
+            role="heading"
+            aria-level={2}
+            className="font-extralight uppercase leading-[1.1] mb-6 lg:mb-8 tracking-widest text-[clamp(32px,8vw,120px)] lg:text-[clamp(64px,6vw,96px)]"
           >
             Marzverse
-          </motion.h1>
+          </motion.div>
           
-          <motion.p 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 0.6 }}
-            className="text-sm md:text-base font-light tracking-[0.5em] uppercase text-[#D9D9D9] mb-2"
+          {/* Primary Service Line */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 0.75, y: 0 }}
+            transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 0.5 }}
+            className="font-light uppercase text-[#FFFFFF] mb-4 lg:mb-6 tracking-[0.3em] md:tracking-[0.4em] lg:tracking-[0.5em] text-[clamp(10px,1.2vw,16px)] lg:text-[clamp(20px,1.6vw,28px)]"
           >
+            Websites <span className="text-[#FF8A00] mx-1 md:mx-2">•</span> AI Chatbots <span className="text-[#FF8A00] mx-1 md:mx-2">•</span> Automation
+          </motion.div>
+
+          {/* Supporting Sentence */}
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 0.5, y: 0 }}
+            transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 0.7 }}
+            className="font-light text-[#FFFFFF] max-w-md md:max-w-lg lg:max-w-xl leading-relaxed tracking-wider px-4 lg:px-0 mx-auto lg:mx-0 text-[clamp(10px,1vw,14px)] lg:text-[clamp(18px,1.2vw,20px)]"
+          >
+            We create fast, SEO-ready, mobile-first digital experiences designed for modern businesses.
+          </motion.p>
+          
+          <p className="sr-only">
             <span className="text-[#FF8A00]">AI</span> Systems
-          </motion.p>
-          <motion.p 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 0.8 }}
-            className="text-xs font-light tracking-[0.3em] uppercase text-[#BFBFBF]"
-          >
+          </p>
+          <p className="sr-only">
             Enterprise-Grade Intelligence Architecture
-          </motion.p>
+          </p>
+        </motion.div>
+
+        {/* Feature Highlights */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 1.0 }}
+          className="absolute bottom-8 md:bottom-12 left-0 right-0 w-full px-6 md:px-12 lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:px-0 lg:mt-12 lg:w-full lg:max-w-[800px] pointer-events-none"
+        >
+          {/* Mobile Layout (Grid, unchanged except hidden on lg) */}
+          <div className="lg:hidden max-w-6xl mx-auto grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4 md:gap-8 border-t border-[#FFFFFF]/10 pt-6 md:pt-8">
+            {features.map((feature, idx) => (
+              <div key={idx} className="flex flex-col items-center md:items-start text-center md:text-left min-w-0">
+                <span className="text-[10px] md:text-xs font-semibold tracking-widest text-[#FFFFFF]/75 uppercase mb-1 md:mb-2">
+                  {feature.title}
+                </span>
+                <span className="text-[9px] md:text-[11px] lg:text-xs font-light text-[#FFFFFF]/40 leading-relaxed tracking-wider max-w-[200px]">
+                  {feature.desc}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Layout (Stacked list with icons) */}
+          <div className="hidden lg:flex flex-col gap-6 w-full max-w-[600px] border-t border-[#FFFFFF]/10 pt-10">
+            {features.map((feature, idx) => (
+              <div key={`lg-${idx}`} className="flex items-center gap-6">
+                <div className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                  <feature.Icon className="w-6 h-6 text-[#FF8A00]" strokeWidth={1.5} />
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-[15px] font-semibold tracking-widest text-[#FFFFFF] uppercase mb-1">
+                    {feature.title}
+                  </span>
+                  <span className="text-sm font-light text-[#FFFFFF]/60 leading-relaxed tracking-wide">
+                    {feature.desc}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </motion.div>
       </motion.div>
     </section>
@@ -343,7 +463,7 @@ function ImmersiveTransition() {
             viewport={{ once: false, margin: "-20%" }}
             transition={{ duration: 2.5, ease: [0.25, 1, 0.5, 1] }}
           >
-            <h2 className="text-4xl md:text-6xl lg:text-8xl font-extralight tracking-tight mb-8 leading-[1.1]">
+            <h2 className="font-extralight tracking-tight mb-8 leading-[1.1]" style={{ fontSize: "clamp(32px, 6vw, 80px)" }}>
               WE DESIGN<br/><span className="text-[#FF8A00]">DIGITAL</span> FUTURES
             </h2>
             <p className="text-lg md:text-xl font-light text-[#BFBFBF] max-w-xl leading-relaxed tracking-widest">
@@ -370,11 +490,11 @@ function FinalExperience({ onContact }: { onContact: () => void }) {
           <p className="text-xs font-light tracking-[0.5em] text-[#BFBFBF] uppercase mb-8">
             The Final Frontier
           </p>
-          <h2 className="text-5xl md:text-7xl font-extralight tracking-tight mb-16 leading-[1.1]">
+          <h2 className="font-extralight tracking-tight mb-16 leading-[1.1]" style={{ fontSize: "clamp(32px, 6vw, 72px)" }}>
             Built for the<br/>Next Generation
           </h2>
           
-          <PremiumButton onClick={onContact}>Start Your Project</PremiumButton>
+          <PremiumButton onClick={onContact} aria-label="Open contact and start your project">Start Your Project</PremiumButton>
         </motion.div>
       </div>
     </section>
@@ -385,7 +505,7 @@ function FinalExperience({ onContact }: { onContact: () => void }) {
 // FOOTER & NAVBAR
 // ==========================================
 
-function Navbar({ onOpenMenu }: { onOpenMenu: () => void }) {
+function Navbar() {
   return (
     <motion.nav 
       initial={{ opacity: 0 }}
@@ -394,13 +514,8 @@ function Navbar({ onOpenMenu }: { onOpenMenu: () => void }) {
       className="fixed top-0 left-0 z-50 w-full px-8 md:px-16 py-8 flex items-center justify-between pointer-events-none"
     >
       <div className="text-xs md:text-sm font-light tracking-[0.2em] md:tracking-[0.3em] uppercase mix-blend-difference pointer-events-auto flex items-center gap-2 md:gap-4 whitespace-nowrap">
-        <img src="/logo.png" alt="Marzverse" className="h-10 md:h-16 w-auto object-contain shrink-0" />
+        <img src="/logo.png" alt="Marzverse - AI Automation, AI Chatbots and Modern Web Development Agency" className="h-10 md:h-16 w-auto object-contain shrink-0" />
         <span>MARZ<span className="text-[#FF8A00]">VERSE</span></span>
-      </div>
-      <div className="pointer-events-auto">
-        <PremiumButton onClick={onOpenMenu} className="!px-8 !py-3 bg-transparent !border-transparent">
-          Menu
-        </PremiumButton>
       </div>
     </motion.nav>
   );
@@ -409,10 +524,10 @@ function Navbar({ onOpenMenu }: { onOpenMenu: () => void }) {
 function Footer() {
   return (
     <footer className="relative z-10 w-full py-12 px-8 md:px-16 border-t border-white/10 bg-black/20 backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-6">
-      <div className="text-xs font-light tracking-[0.2em] uppercase text-[#BFBFBF]">
+      <div className="text-xs font-light tracking-[0.2em] uppercase text-[#BFBFBF] min-w-0 text-center md:text-left">
         © 2026 Marzverse
       </div>
-      <div className="flex flex-wrap gap-8 text-xs font-light tracking-[0.2em] uppercase text-[#BFBFBF]">
+      <div className="flex flex-wrap gap-8 text-xs font-light tracking-[0.2em] uppercase text-[#BFBFBF] min-w-0 justify-center">
         <a 
           href="https://x.com/MARZ_VERSE" 
           target="_blank" 
@@ -438,7 +553,7 @@ function Footer() {
           <InstagramIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
         </a>
       </div>
-      <a href="mailto:contact@marzverse.com" className="text-xs font-light tracking-[0.2em] uppercase text-[#BFBFBF] hover:text-[#FFA94D] transition-colors cursor-pointer whitespace-nowrap">
+      <a href="mailto:contact@marzverse.com" className="text-xs font-light tracking-[0.2em] uppercase text-[#BFBFBF] hover:text-[#FFA94D] transition-colors cursor-pointer whitespace-nowrap min-w-0 text-center md:text-right">
         contact@marzverse.com
       </a>
     </footer>

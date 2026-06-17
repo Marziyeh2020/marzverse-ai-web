@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/immutability, react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 'use client';
 
 import React, { useRef, useMemo, useState } from 'react';
@@ -5,7 +6,6 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
-import { useScroll } from 'framer-motion';
 import { useEffect } from 'react';
 
 // =====================================
@@ -119,25 +119,30 @@ const fragmentShader = `
   varying float vOpacity;
   varying float vDepth;
   uniform float uMobileMultiplier;
+  uniform float uIsMobile;
 
   void main() {
-    // 1. Crisp Circular Particle Definition
+    // 1. Circular Particle Definition
     float distToCenter = distance(gl_PointCoord, vec2(0.5));
     
-    // Reduced halo size by 30% (discard outer blurry edges)
-    if (distToCenter > 0.35) discard;
+    // On mobile, allow a wider halo (maxDist 0.5) to create a soft glow texture without post-processing.
+    float maxDist = mix(0.35, 0.5, uIsMobile);
+    if (distToCenter > maxDist) discard;
     
     // Crisp solid core
     float core = smoothstep(0.12, 0.0, distToCenter);
     
-    // Tighter, heavily reduced halo for less light bleed
-    float halo = smoothstep(0.35, 0.12, distToCenter);
+    // Soft glow halo on mobile, tight halo on desktop
+    float halo = smoothstep(maxDist, 0.12, distToCenter);
     
-    // 2. Alpha & Depth Fading
-    float alpha = mix(0.1 * uMobileMultiplier, 1.0, clamp(vDepth + 0.3, 0.0, 1.0));
+    // 2. Alpha & Depth Fading (boosted minAlpha on mobile for better contrast and perceived depth)
+    float minAlpha = mix(0.1 * uMobileMultiplier, 0.35, uIsMobile);
+    float alpha = mix(minAlpha, 1.0, clamp(vDepth + 0.3, 0.0, 1.0));
     
-    // Focus opacity on the crisp core, giving the particle a defined silhouette
-    float finalAlpha = alpha * (core * 0.8 + halo * 0.2);
+    // Boost glow opacity in the halo on mobile
+    float coreWeight = mix(0.8, 0.7, uIsMobile);
+    float haloWeight = mix(0.2, 0.55, uIsMobile);
+    float finalAlpha = alpha * (core * coreWeight + halo * haloWeight);
     
     // 3. Final Output
     gl_FragColor = vec4(vColor, finalAlpha * vOpacity);
@@ -229,13 +234,15 @@ function ParticleGlobe({
     uPrimaryColor: { value: primaryColor },
     uHighlightColor: { value: highlightColor },
     uCenterColor: { value: centerColor },
-    uMobileMultiplier: { value: isMobile ? 0.4 : 1.0 } // 10x smaller than 4.0
+    uMobileMultiplier: { value: isMobile ? 0.75 : 1.0 }, // Increased from 0.4 to 0.75 for 1.875x scale boost
+    uIsMobile: { value: isMobile ? 1.0 : 0.0 }
   }), [primaryColor, highlightColor, centerColor]); // Removed isMobile from dependency array to avoid recreating uniforms object
 
   // Explicitly update mobile multiplier when it changes
   useEffect(() => {
     if (shaderRef.current) {
-      shaderRef.current.uniforms.uMobileMultiplier.value = isMobile ? 0.4 : 1.0;
+      shaderRef.current.uniforms.uMobileMultiplier.value = isMobile ? 0.75 : 1.0;
+      shaderRef.current.uniforms.uIsMobile.value = isMobile ? 1.0 : 0.0;
     }
   }, [isMobile]);
 
@@ -260,7 +267,7 @@ function ParticleGlobe({
   );
 }
 
-function SceneController() {
+function SceneController({ isDesktop }: { isDesktop: boolean }) {
   const { camera, pointer } = useThree();
 
   useFrame((state, delta) => {
@@ -268,8 +275,12 @@ function SceneController() {
     camera.position.z = 5.0;
     
     // Very subtle mouse parallax to keep it feeling alive, but strictly anchored
-    const targetX = pointer.x * 0.05;
-    const targetY = pointer.y * 0.05;
+    // Only active on desktop and when inside the Hero section (scrollY < 1.2 * window.innerHeight)
+    const scrollY = typeof window !== "undefined" ? window.scrollY : 0;
+    const isHeroSection = scrollY < window.innerHeight * 1.2;
+
+    const targetX = (isDesktop && isHeroSection) ? pointer.x * 0.05 : 0;
+    const targetY = (isDesktop && isHeroSection) ? pointer.y * 0.05 : 0;
     
     camera.position.x = THREE.MathUtils.damp(camera.position.x, targetX, 10.0, delta);
     camera.position.y = THREE.MathUtils.damp(camera.position.y, targetY, 10.0, delta);
@@ -280,11 +291,33 @@ function SceneController() {
   return null;
 }
 
-function GlobalRaycaster({ onPointerUpdate }: { onPointerUpdate: (point: THREE.Vector3) => void }) {
+function GlobalRaycaster({ 
+  onPointerUpdate, 
+  isDesktop,
+  isHoveringRef
+}: { 
+  onPointerUpdate: (point: THREE.Vector3) => void;
+  isDesktop: boolean;
+  isHoveringRef: React.MutableRefObject<boolean>;
+}) {
   const { camera, pointer, raycaster } = useThree();
   const lastRegisteredPoint = useRef(new THREE.Vector3(0, 0, 50));
   
   useFrame(() => {
+    if (!isDesktop) {
+      isHoveringRef.current = false;
+      return;
+    }
+
+    // Only track cursor movement when in the Hero section (scrollY < 1.2 * height)
+    const scrollY = typeof window !== "undefined" ? window.scrollY : 0;
+    const isHeroSection = scrollY < window.innerHeight * 1.2;
+
+    if (!isHeroSection) {
+      isHoveringRef.current = false;
+      return;
+    }
+
     raycaster.setFromCamera(pointer, camera);
     
     const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
@@ -313,50 +346,38 @@ function InteractiveScene() {
   // Responsive particle count for performance
   const [particleCount, setParticleCount] = useState(6000);
   const [isMobile, setIsMobile] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
     console.log("[MARZVERSE] Scene mounted");
     
-    // 1. Mobile Detection & Particle Reduction
+    // 1. Mobile/Desktop Detection & Particle Reduction
     const updateSize = () => {
-      const mobile = window.innerWidth < 768;
+      const mobile = window.innerWidth < 1024;
+      const desktop = window.innerWidth >= 1024;
       setIsMobile(mobile);
-      setParticleCount(mobile ? 500 : 6000);
+      setIsDesktop(desktop);
+      setParticleCount(mobile ? 800 : 6000); // 800 particles for better mobile loop definition
+      
+      if (!desktop) {
+        isHoveringRef.current = false;
+      }
     };
     updateSize();
     window.addEventListener('resize', updateSize);
 
-    // 2. Global Touch listeners for Mobile Interaction
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length > 0) {
-        isHoveringRef.current = true;
-      }
-    };
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0) {
-        isHoveringRef.current = true;
-        
-        // Map touch position to normalized device coordinates (-1 to +1)
-        const touchX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
-        const touchY = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
-        
-        // BUGFIX: Mobile physics were too harsh. Map touches closer to center and Z=0 instead of deep space.
-        hitPointRef.current.set(touchX * 2.5, touchY * 2.5, 0); 
-      }
-    };
-    const handleTouchEnd = () => {
-      isHoveringRef.current = false; 
+    // 2. Global Mouseleave listeners for Desktop to reset hover
+    const handleMouseLeave = () => {
+      isHoveringRef.current = false;
     };
 
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('pointerout', handleMouseLeave);
 
     return () => {
       window.removeEventListener('resize', updateSize);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('pointerout', handleMouseLeave);
     };
   }, []);
 
@@ -368,11 +389,15 @@ function InteractiveScene() {
 
   return (
     <>
-      <SceneController />
-      <GlobalRaycaster onPointerUpdate={(point) => {
-        hitPointRef.current.copy(point);
-        isHoveringRef.current = true;
-      }} />
+      <SceneController isDesktop={isDesktop} />
+      <GlobalRaycaster 
+        isDesktop={isDesktop} 
+        isHoveringRef={isHoveringRef}
+        onPointerUpdate={(point) => {
+          hitPointRef.current.copy(point);
+          isHoveringRef.current = true;
+        }} 
+      />
       
       {/* First Sphere (Original) */}
       <ParticleGlobe 
@@ -400,14 +425,16 @@ function InteractiveScene() {
         isMobile={isMobile}
       />
 
-      <EffectComposer>
-        <Bloom 
-          intensity={1.0} 
-          luminanceThreshold={0.5} 
-          luminanceSmoothing={0.5} 
-          blendFunction={BlendFunction.SCREEN} 
-        />
-      </EffectComposer>
+      {!isMobile && (
+        <EffectComposer>
+          <Bloom 
+            intensity={1.0} 
+            luminanceThreshold={0.5} 
+            luminanceSmoothing={0.5} 
+            blendFunction={BlendFunction.SCREEN} 
+          />
+        </EffectComposer>
+      )}
     </>
   );
 }

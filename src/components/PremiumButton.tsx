@@ -9,14 +9,29 @@ interface PremiumButtonProps {
   className?: string;
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
+  "aria-label"?: string;
+  "aria-expanded"?: boolean;
+  "aria-controls"?: string;
 }
 
-export default function PremiumButton({ children, onClick, className = "", type = "button", disabled = false }: PremiumButtonProps) {
+export default function PremiumButton({ 
+  children, 
+  onClick, 
+  className = "", 
+  type = "button", 
+  disabled = false,
+  "aria-label": ariaLabel,
+  "aria-expanded": ariaExpanded,
+  "aria-controls": ariaControls
+}: PremiumButtonProps) {
   return (
     <motion.button
       type={type}
       disabled={disabled}
       onClick={onClick}
+      aria-label={ariaLabel}
+      aria-expanded={ariaExpanded}
+      aria-controls={ariaControls}
       whileHover="hover"
       initial="initial"
       className={`group relative overflow-hidden px-12 py-4 border border-white/10 bg-black/40 backdrop-blur-md rounded-none flex items-center justify-center ${className}`}

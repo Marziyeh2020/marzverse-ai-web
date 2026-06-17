@@ -72,9 +72,18 @@ export default function Chatbot() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 w-14 h-14 md:w-16 md:h-16 rounded-full border border-[#FF8A00] bg-black/50 backdrop-blur-md flex items-center justify-center text-[#FF8A00] shadow-[0_0_20px_rgba(255,138,0,0.3)] hover:shadow-[0_0_30px_rgba(255,138,0,0.5)] transition-shadow duration-300 group"
+            aria-label="Open AI Assistant chat"
+            aria-expanded={isOpen}
+            aria-controls="chatbot-dialog"
+            className="fixed bottom-[calc(90px+env(safe-area-inset-bottom))] right-[calc(20px+env(safe-area-inset-right))] md:bottom-[40px] md:right-[40px] z-[9999] w-12 h-12 md:w-[72px] md:h-[72px] rounded-full border border-[#FF8A00]/20 bg-[#050505]/60 backdrop-blur-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,138,0,0.4)] hover:shadow-[0_0_30px_rgba(255,138,0,0.8)] hover:border-[#FF8A00]/50 transition-all duration-500 group"
           >
-            <Bot className="w-7 h-7 md:w-8 md:h-8 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
+            <div className="w-full h-full rounded-full overflow-hidden p-0">
+              <img 
+                src="/charachter.png" 
+                alt="Marzverse Assistant Avatar" 
+                className="w-full h-full rounded-full object-cover group-hover:scale-110 transition-transform duration-300" 
+              />
+            </div>
           </motion.button>
         )}
       </AnimatePresence>
@@ -87,13 +96,21 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
-            className="fixed bottom-24 md:bottom-28 left-0 right-0 mx-auto md:mx-0 md:left-auto md:right-8 z-50 w-[90vw] md:w-[380px] max-w-[420px] bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col font-sans"
+            id="chatbot-dialog"
+            role="dialog"
+            aria-modal="false"
+            aria-label="AI Assistant Chat"
+            className="fixed bottom-[calc(150px+env(safe-area-inset-bottom))] md:bottom-[110px] left-0 right-0 mx-auto md:mx-0 md:left-auto md:right-[40px] z-50 w-[90vw] md:w-[380px] max-w-[420px] bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col font-sans"
           >
             {/* Header */}
             <div className="p-4 md:p-5 border-b border-white/10 flex items-center justify-between bg-gradient-to-b from-white/[0.02] to-transparent">
               <div className="flex items-center gap-4">
-                <div className="text-[#FF8A00]">
-                  <Bot className="w-6 h-6" strokeWidth={1.5} />
+                <div className="w-8 h-8 rounded-full overflow-hidden border border-[#FF8A00]/30">
+                  <img 
+                    src="/charachter.png" 
+                    alt="Marzverse Assistant Avatar" 
+                    className="w-full h-full object-cover" 
+                  />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold tracking-wider text-white">
@@ -104,6 +121,7 @@ export default function Chatbot() {
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
+                aria-label="Close AI Assistant chat"
                 className="text-[#BFBFBF] hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" strokeWidth={1.5} />
@@ -130,7 +148,7 @@ export default function Chatbot() {
                   <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[90%] md:max-w-[85%] rounded-2xl md:rounded-xl p-5 md:p-4 relative ${msg.role === 'user' ? 'bg-[#FF8A00]/10 border border-[#FF8A00]/20' : 'bg-[#141414] border border-white/5'}`}>
                       {msg.role === 'bot' && msg.id === '1' && (
-                        <p className="text-[#FF8A00] font-medium text-sm mb-2 md:mb-1">Hello, I'm Marzverse Assistant.</p>
+                        <p className="text-[#FF8A00] font-medium text-sm mb-2 md:mb-1">Hello, I&apos;m Marzverse Assistant.</p>
                       )}
                       <p className={`text-[15px] md:text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'user' ? 'text-white' : 'text-[#BFBFBF]'}`}>
                         {msg.role === 'bot' && msg.id === '1' ? msg.text.split('\n')[1] : msg.text}
@@ -162,11 +180,13 @@ export default function Chatbot() {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type your question..." 
-                  className="w-full bg-[#141414] border border-white/10 rounded-lg py-3 md:py-3 pl-4 pr-14 text-[15px] md:text-sm text-white placeholder-[#BFBFBF]/50 focus:outline-none focus:border-[#FF8A00]/50 transition-colors"
+                  aria-label="Type your message to AI Assistant"
+                  className="w-full min-w-0 bg-[#141414] border border-white/10 rounded-lg py-3 md:py-3 pl-4 pr-14 text-[15px] md:text-sm text-white placeholder-[#BFBFBF]/50 focus:outline-none focus:border-[#FF8A00]/50 transition-colors"
                 />
                 <button 
                   onClick={() => handleSend(inputValue)}
                   disabled={isLoading || !inputValue.trim()}
+                  aria-label="Send message to AI Assistant"
                   className="absolute right-2 w-9 h-9 md:w-8 md:h-8 bg-[#FF8A00] rounded-md flex items-center justify-center text-white hover:bg-[#FF8A00]/90 transition-colors disabled:opacity-50"
                 >
                   <Send className="w-4 h-4 md:w-4 md:h-4" strokeWidth={1.5} />
@@ -186,17 +206,21 @@ export default function Chatbot() {
 
 function TopicButton({ icon, title, desc, onClick }: { icon: React.ReactNode, title: string, desc: string, onClick: () => void }) {
   return (
-    <button onClick={onClick} className="w-full flex items-center justify-between p-3 rounded-lg bg-[#141414] hover:bg-[#1A1A1A] border border-white/5 transition-colors group text-left">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-[#FF8A00]/10 flex items-center justify-center">
+    <button 
+      onClick={onClick} 
+      aria-label={`Ask about ${title}`}
+      className="w-full flex items-center justify-between p-3 rounded-lg bg-[#141414] hover:bg-[#1A1A1A] border border-white/5 transition-colors group text-left min-w-0"
+    >
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="w-8 h-8 rounded-full bg-[#FF8A00]/10 flex items-center justify-center shrink-0">
           {icon}
         </div>
-        <div>
-          <h4 className="text-sm font-medium text-[#E5E5E5] group-hover:text-white transition-colors">{title}</h4>
-          <p className="text-[11px] text-[#808080] mt-0.5">{desc}</p>
+        <div className="min-w-0 flex-1">
+          <h4 className="text-sm font-medium text-[#E5E5E5] group-hover:text-white transition-colors truncate">{title}</h4>
+          <p className="text-[11px] text-[#808080] mt-0.5 truncate">{desc}</p>
         </div>
       </div>
-      <ChevronRight className="w-4 h-4 text-[#404040] group-hover:text-[#BFBFBF] transition-colors" strokeWidth={1.5} />
+      <ChevronRight className="w-4 h-4 text-[#404040] group-hover:text-[#BFBFBF] transition-colors shrink-0" strokeWidth={1.5} />
     </button>
   );
 }
