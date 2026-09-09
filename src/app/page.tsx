@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Lenis from "lenis";
-import { Zap, Smartphone, Search, PenTool } from "lucide-react";
 import PremiumButton from "@/components/PremiumButton";
 import CinematicCursor from "@/components/CinematicCursor";
 import FullscreenContact from "@/components/FullscreenContact";
+import ServicesSection from "@/components/ServicesSection";
 import WorkShowcase from "@/components/WorkShowcase";
 import CinematicEarth from "@/components/CinematicEarth";
 import Chatbot from "@/components/Chatbot";
@@ -14,78 +14,39 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 
 
 export default function Home() {
-  const [loading, setLoading] = useState(false);
-  const [activeSection, setActiveSection] = useState("hero");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lenisRef = useRef<any>(null);
 
   useEffect(() => {
-    // Initialize Lenis Smooth Scroll
+    // Initialize Lenis Smooth Scroll only on desktop to prevent mobile touch locking
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let lenis: any = null;
     try {
-      lenis = new Lenis({
-        duration: 1.5,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        smoothWheel: true,
-      });
-      lenisRef.current = lenis;
+      if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+        lenis = new Lenis({
+          duration: 1.5,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          smoothWheel: true,
+        });
+        lenisRef.current = lenis;
 
-      function raf(time: number) {
-        lenis?.raf(time);
+        function raf(time: number) {
+          lenis?.raf(time);
+          requestAnimationFrame(raf);
+        }
         requestAnimationFrame(raf);
       }
-      requestAnimationFrame(raf);
     } catch (e) {
       console.warn("Lenis initialization failed", e);
     }
 
-    // Short cinematic loader for 3D initialization
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-
-    // Fail-safe timeout in case of major rendering blocking or WebGL failure
-    const failsafe = setTimeout(() => {
-      if (loading) {
-        console.warn("[MARZVERSE] Failsafe triggered: hiding loader after 5s");
-        setLoading(false);
-      }
-    }, 5000);
-
     return () => {
-      clearTimeout(timer);
-      clearTimeout(failsafe);
       if (lenis) lenis.destroy();
     };
-  }, [loading]);
-
-  // Intersection Observer for Active Section
-  useEffect(() => {
-    if (loading) return;
-    
-    const sections = document.querySelectorAll("section");
-    
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      {
-        root: null,
-        rootMargin: "-40% 0px -40% 0px",
-        threshold: 0
-      }
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => sections.forEach((section) => observer.unobserve(section));
-  }, [loading]);
+  }, []);
 
   const scrollTo = (id: string) => {
     if (lenisRef.current) {
@@ -102,50 +63,62 @@ export default function Home() {
     }, 800); // Wait for cinematic menu dissolve before scrolling
   };
 
+  const handleOpenContact = (serviceTitle?: string) => {
+    setSelectedService(serviceTitle || "");
+    setIsContactOpen(true);
+  };
+
   return (
     <main 
-      className="relative w-full max-w-[100vw] overflow-x-clip min-h-screen text-[#FFFFFF] font-sans selection:bg-[#D9D9D9]/30"
-      style={{ background: "radial-gradient(circle at center, #050505 0%, #000000 100%)" }}
+      className="relative w-full max-w-[100vw] overflow-x-clip min-h-screen text-[#FFFFFF] font-sans bg-[#050505] selection:bg-[#D9D9D9]/30"
+      style={{ background: "#050505" }}
     >
-      {/* BUGFIX: Moved Canvas outside of motion.div to ensure position: fixed works relative to viewport */}
+      {/* 3D Interactive Canvas */}
       <div className="fixed inset-0 z-0 pointer-events-auto">
-        <ErrorBoundary fallback={<div className="absolute inset-0 bg-black/50" />}>
+        <ErrorBoundary fallback={<div className="absolute inset-0 bg-[#050505]" />}>
           <HeroAmbientEffects />
           <CinematicEarth />
         </ErrorBoundary>
       </div>
 
-      <motion.div
+      <div
         key="content"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 2, ease: "easeOut" }}
         className="relative w-full flex flex-col pointer-events-none"
       >
             <FullscreenMenu 
               isOpen={isMenuOpen} 
               onClose={() => setIsMenuOpen(false)} 
               onNavigate={handleNav}
-              onOpenContact={() => { setIsMenuOpen(false); setTimeout(() => setIsContactOpen(true), 800); }}
+              onOpenContact={() => { setIsMenuOpen(false); setTimeout(() => handleOpenContact(), 800); }}
             />
-            <FullscreenContact isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
+            <FullscreenContact 
+              isOpen={isContactOpen} 
+              onClose={() => setIsContactOpen(false)} 
+              initialService={selectedService}
+            />
             <CinematicCursor />
             
             <Navbar />
             
-            {/* BUGFIX: The z-10 wrapper MUST have pointer-events-none, otherwise it acts as an invisible wall blocking the Canvas! */}
+            {/* The z-10 wrapper has pointer-events-none so mouse passes through to 3D canvas, while interactive children enable pointer-events-auto */}
             <div className="relative z-10 pointer-events-none">
-              <HeroIntro onEnter={() => scrollTo("#immersive")} />
+              <HeroIntro 
+                onContact={() => handleOpenContact()}
+                onViewWork={() => scrollTo("#work")}
+              />
               <div className="pointer-events-auto"><ImmersiveTransition /></div>
+              <div className="pointer-events-auto"><ServicesSection onContact={handleOpenContact} /></div>
               <div className="pointer-events-auto"><WorkShowcase /></div>
-              <div className="pointer-events-auto"><FinalExperience onContact={() => setIsContactOpen(true)} /></div>
+              <div className="pointer-events-auto"><FinalExperience onContact={() => handleOpenContact()} /></div>
             </div>
 
             <div className="pointer-events-auto"><Footer /></div>
             
             {/* Global Floating Chatbot */}
-            <div className="pointer-events-auto"><Chatbot /></div>
-          </motion.div>
+            <div className="pointer-events-auto">
+              <Chatbot onOpenContact={() => handleOpenContact()} />
+            </div>
+          </div>
 
           {/* Screen Reader Accessible SEO Supporting Text */}
           <div className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>
@@ -177,39 +150,13 @@ export default function Home() {
 
 
 // ==========================================
-// CINEMATIC OVERLAYS
-// ==========================================
-function AnimatedGrain() {
-  const { scrollYProgress } = useScroll();
-  // 2. Parallax: grain layer moves slightly with scroll
-  const grainY = useTransform(scrollYProgress, [0, 1], ["0%", "-5%"]);
-
-  return (
-    <motion.div 
-      className="fixed inset-[-10%] w-[120%] h-[120%] z-40 pointer-events-none mix-blend-overlay opacity-[0.06]"
-      style={{ 
-        y: grainY,
-        backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.95\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")',
-      }}
-      animate={{
-        backgroundPosition: ["0% 0%", "5% 5%", "-5% -5%", "10% -2%", "-2% 10%", "0% 0%"],
-        scale: [1, 1.03, 1]
-      }}
-      transition={{ 
-        backgroundPosition: { duration: 0.8, ease: "linear", repeat: Infinity },
-        scale: { duration: 20, ease: "easeInOut", repeat: Infinity }
-      }}
-    />
-  );
-}
-
-// ==========================================
 // FULLSCREEN CINEMATIC MENU
 // ==========================================
 function FullscreenMenu({ isOpen, onClose, onNavigate, onOpenContact }: { isOpen: boolean; onClose: () => void; onNavigate: (id: string) => void; onOpenContact: () => void; }) {
   const menuItems = [
     { label: "Experience", action: () => onNavigate("#hero") },
     { label: "Vision", action: () => onNavigate("#immersive") },
+    { label: "Services", action: () => onNavigate("#services") },
     { label: "Work", action: () => onNavigate("#work") },
     { label: "Contact", action: () => onOpenContact() },
   ];
@@ -303,7 +250,7 @@ function MenuLink({ item, action, index }: { item: string; action: () => void; i
       <motion.div 
         whileHover={{ x: 30 }}
         transition={{ duration: 1.8, ease: "easeOut" }}
-        className="text-4xl md:text-6xl lg:text-7xl font-extralight tracking-[0.2em] uppercase text-[#BFBFBF] group-hover:text-[#FFA94D] transition-colors duration-1000"
+        className="text-4xl md:text-6xl lg:text-7xl font-extralight tracking-[0.2em] uppercase text-[#B8B8B8] group-hover:text-[#FF6A00] transition-colors duration-700"
       >
         {item}
       </motion.div>
@@ -316,7 +263,7 @@ function MenuLink({ item, action, index }: { item: string; action: () => void; i
         initial="initial"
         whileHover="hover"
         transition={{ duration: 2.5, ease: "easeInOut" }}
-        className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_0%,transparent_70%)] pointer-events-none filter blur-xl mix-blend-screen"
+        className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,106,0,0.15)_0%,transparent_70%)] pointer-events-none filter blur-xl mix-blend-screen"
       />
     </motion.div>
   );
@@ -326,151 +273,99 @@ function MenuLink({ item, action, index }: { item: string; action: () => void; i
 // SECTIONS (LUXURY EDITORIAL)
 // ==========================================
 
-function HeroIntro({ onEnter }: { onEnter: () => void }) {
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, 300]);
-  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-
-  const features = [
-    {
-      title: "Fast Performance",
-      desc: "Optimized for speed and smooth user experiences.",
-      Icon: Zap
-    },
-    {
-      title: "Mobile First",
-      desc: "Designed to work beautifully on every device.",
-      Icon: Smartphone
-    },
-    {
-      title: "SEO Ready",
-      desc: "Built with modern search engine best practices.",
-      Icon: Search
-    },
-    {
-      title: "Custom Design",
-      desc: "Tailored experiences crafted for each brand.",
-      Icon: PenTool
-    }
-  ];
-
+function HeroIntro({ onContact, onViewWork }: { onContact: () => void; onViewWork: () => void }) {
   return (
-    <section id="hero" className="relative w-full h-[180vh] pointer-events-none">
-      <h1 className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>
-        AI Automation, AI Chatbots & Modern Website Development
-      </h1>
-      <motion.div 
-        style={{ y, opacity }}
-        className="sticky top-0 h-screen w-full flex flex-col justify-center px-6 lg:px-24 items-center lg:items-start text-center lg:text-left"
-      >
+    <section id="hero" className="relative w-full min-h-screen flex items-center px-6 sm:px-12 lg:px-24 pt-20 sm:pt-24 lg:pt-0 pb-16 lg:py-0 pointer-events-none">
+      <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between">
         <motion.div
-          animate={{ y: [0, -4, 0] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="flex flex-col items-center lg:items-start lg:max-w-[800px] w-full"
-        >
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}
-            role="heading"
-            aria-level={2}
-            className="font-extralight uppercase leading-[1.1] mb-6 lg:mb-8 tracking-widest text-[clamp(32px,8vw,120px)] lg:text-[clamp(64px,6vw,96px)]"
-          >
-            Marzverse
-          </motion.div>
-          
-          {/* Primary Service Line */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 0.75, y: 0 }}
-            transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 0.5 }}
-            className="font-light uppercase text-[#FFFFFF] mb-4 lg:mb-6 tracking-[0.3em] md:tracking-[0.4em] lg:tracking-[0.5em] text-[clamp(10px,1.2vw,16px)] lg:text-[clamp(20px,1.6vw,28px)]"
-          >
-            Websites <span className="text-[#FF8A00] mx-1 md:mx-2">•</span> AI Chatbots <span className="text-[#FF8A00] mx-1 md:mx-2">•</span> Automation
-          </motion.div>
-
-          {/* Supporting Sentence */}
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 0.5, y: 0 }}
-            transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 0.7 }}
-            className="font-light text-[#FFFFFF] max-w-md md:max-w-lg lg:max-w-xl leading-relaxed tracking-wider px-4 lg:px-0 mx-auto lg:mx-0 text-[clamp(10px,1vw,14px)] lg:text-[clamp(18px,1.2vw,20px)]"
-          >
-            We create fast, SEO-ready, mobile-first digital experiences designed for modern businesses.
-          </motion.p>
-          
-          <p className="sr-only">
-            <span className="text-[#FF8A00]">AI</span> Systems
-          </p>
-          <p className="sr-only">
-            Enterprise-Grade Intelligence Architecture
-          </p>
-        </motion.div>
-
-        {/* Feature Highlights */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 3, ease: [0.25, 1, 0.5, 1], delay: 1.0 }}
-          className="absolute bottom-8 md:bottom-12 left-0 right-0 w-full px-6 md:px-12 lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:px-0 lg:mt-12 lg:w-full lg:max-w-[800px] pointer-events-none"
+          transition={{ duration: 1.6, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}
+          className="w-full lg:max-w-3xl xl:max-w-[850px] text-left pointer-events-auto flex flex-col items-start"
         >
-          {/* Mobile Layout (Grid, unchanged except hidden on lg) */}
-          <div className="lg:hidden max-w-6xl mx-auto grid grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))] gap-4 md:gap-8 border-t border-[#FFFFFF]/10 pt-6 md:pt-8">
-            {features.map((feature, idx) => (
-              <div key={idx} className="flex flex-col items-center md:items-start text-center md:text-left min-w-0">
-                <span className="text-[10px] md:text-xs font-semibold tracking-widest text-[#FFFFFF]/75 uppercase mb-1 md:mb-2">
-                  {feature.title}
-                </span>
-                <span className="text-[9px] md:text-[11px] lg:text-xs font-light text-[#FFFFFF]/40 leading-relaxed tracking-wider max-w-[200px]">
-                  {feature.desc}
-                </span>
-              </div>
-            ))}
-          </div>
+          {/* Small Label */}
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.3 }}
+            className="text-[11px] sm:text-xs md:text-sm font-medium tracking-[0.28em] sm:tracking-[0.3em] uppercase text-[#D0D0D0] mb-3 sm:mb-5"
+          >
+            MARZVERSE • DIGITAL STUDIO
+          </motion.div>
 
-          {/* Desktop Layout (Stacked list with icons) */}
-          <div className="hidden lg:flex flex-col gap-6 w-full max-w-[600px] border-t border-[#FFFFFF]/10 pt-10">
-            {features.map((feature, idx) => (
-              <div key={`lg-${idx}`} className="flex items-center gap-6">
-                <div className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-                  <feature.Icon className="w-6 h-6 text-[#FF8A00]" strokeWidth={1.5} />
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="text-[15px] font-semibold tracking-widest text-[#FFFFFF] uppercase mb-1">
-                    {feature.title}
-                  </span>
-                  <span className="text-sm font-light text-[#FFFFFF]/60 leading-relaxed tracking-wide">
-                    {feature.desc}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Main Heading */}
+          <motion.h1 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.4, delay: 0.4 }}
+            className="font-extralight text-[#F5F5F5] tracking-tight leading-[1.10] sm:leading-[1.12] lg:leading-[1.14] mb-4 sm:mb-6 text-[34px] min-[390px]:text-[38px] sm:text-[44px] md:text-[52px] lg:text-[60px] xl:text-[68px] max-w-3xl"
+          >
+            <span className="block sm:inline">Websites and</span>{" "}
+            <span className="block sm:inline text-[#FF6A00] font-normal">AI Systems</span><br className="hidden lg:inline" />{" "}
+            <span className="block sm:inline">Built to Grow</span>{" "}
+            <span className="block sm:inline">Your Business</span>
+          </motion.h1>
+
+          {/* Description */}
+          <motion.p 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.4, delay: 0.6 }}
+            className="font-light text-[#B8B8B8] max-w-xl text-[15px] sm:text-[16px] lg:text-[18px] leading-[1.65] sm:leading-[1.7] tracking-normal mb-6 sm:mb-8 lg:mb-10"
+          >
+            We design modern websites, AI chatbots and smart automation systems that help businesses save time and grow faster.
+          </motion.p>
+
+          {/* Action Buttons */}
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.4, delay: 0.8 }}
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 w-full sm:w-auto"
+          >
+            {/* Primary Button */}
+            <button
+              type="button"
+              onClick={onContact}
+              className="w-full sm:w-auto group relative inline-flex items-center justify-center px-8 py-4 bg-[#FF6A00] hover:bg-[#FF8533] text-[#050505] font-semibold text-xs sm:text-sm tracking-[0.18em] uppercase transition-all duration-300 rounded-sm shadow-[0_0_20px_rgba(255,106,0,0.25)] hover:shadow-[0_0_30px_rgba(255,106,0,0.45)] hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A00] focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505] cursor-pointer min-h-[48px]"
+              aria-label="Start a Project"
+            >
+              <span>Start a Project</span>
+            </button>
+
+            {/* Secondary Button */}
+            <button
+              type="button"
+              onClick={onViewWork}
+              className="w-full sm:w-auto group relative inline-flex items-center justify-center px-8 py-4 bg-transparent hover:bg-white/[0.06] text-[#F5F5F5] hover:text-white font-medium text-xs sm:text-sm tracking-[0.18em] uppercase border border-white/20 hover:border-white/50 transition-all duration-300 rounded-sm hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505] cursor-pointer min-h-[48px]"
+              aria-label="View Our Work"
+            >
+              <span>View Our Work</span>
+            </button>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }
 
 function ImmersiveTransition() {
   return (
-    <section id="immersive" className="relative w-full h-[220vh]">
-      <div className="sticky top-0 h-screen w-full flex items-center px-12 md:px-24">
-        <div className="max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: false, margin: "-20%" }}
-            transition={{ duration: 2.5, ease: [0.25, 1, 0.5, 1] }}
-          >
-            <h2 className="font-extralight tracking-tight mb-8 leading-[1.1]" style={{ fontSize: "clamp(32px, 6vw, 80px)" }}>
-              WE DESIGN<br/><span className="text-[#FF8A00]">DIGITAL</span> FUTURES
-            </h2>
-            <p className="text-lg md:text-xl font-light text-[#BFBFBF] max-w-xl leading-relaxed tracking-widest">
-              AI systems, immersive interfaces, automation ecosystems, cinematic brand experiences.
-            </p>
-          </motion.div>
-        </div>
+    <section id="immersive" className="relative w-full py-20 sm:py-24 md:py-28 lg:py-32 px-6 sm:px-12 lg:px-24">
+      <div className="max-w-4xl mx-auto lg:mx-0">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-10%" }}
+          transition={{ duration: 1.8, ease: [0.25, 1, 0.5, 1] }}
+        >
+          <h2 className="font-extralight tracking-tight mb-6 sm:mb-8 leading-[1.1] text-[#F5F5F5] text-[32px] sm:text-[42px] md:text-[50px] lg:text-[56px]">
+            WE DESIGN<br /><span className="text-[#FF6A00]">DIGITAL</span> FUTURES
+          </h2>
+          <p className="text-[15px] sm:text-[16px] md:text-[18px] lg:text-[19px] font-light text-[#B8B8B8] max-w-xl leading-[1.7] tracking-normal">
+            AI systems, immersive websites and intelligent automation designed for ambitious businesses.
+          </p>
+        </motion.div>
       </div>
     </section>
   );
@@ -478,20 +373,20 @@ function ImmersiveTransition() {
 
 function FinalExperience({ onContact }: { onContact: () => void }) {
   return (
-    <section id="final" className="relative w-full h-[180vh]">
-      <div className="h-full w-full flex flex-col items-center justify-center text-center px-6">
+    <section id="final" className="relative w-full py-24 sm:py-32 md:py-40 px-6">
+      <div className="h-full w-full flex flex-col items-center justify-center text-center">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-          whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-          viewport={{ once: false, margin: "-20%" }}
-          transition={{ duration: 3, ease: [0.25, 1, 0.5, 1] }}
-          className="flex flex-col items-center justify-center"
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-10%" }}
+          transition={{ duration: 2, ease: [0.25, 1, 0.5, 1] }}
+          className="flex flex-col items-center justify-center max-w-3xl"
         >
-          <p className="text-xs font-light tracking-[0.5em] text-[#BFBFBF] uppercase mb-8">
+          <p className="text-xs sm:text-sm font-medium tracking-[0.4em] text-[#A3A3A3] uppercase mb-6 sm:mb-8">
             The Final Frontier
           </p>
-          <h2 className="font-extralight tracking-tight mb-16 leading-[1.1]" style={{ fontSize: "clamp(32px, 6vw, 72px)" }}>
-            Built for the<br/>Next Generation
+          <h2 className="font-extralight tracking-tight mb-10 sm:mb-12 leading-[1.1] text-[#F5F5F5] text-[32px] sm:text-[44px] md:text-[54px] lg:text-[64px]">
+            Built for the<br />Next Generation
           </h2>
           
           <PremiumButton onClick={onContact} aria-label="Open contact and start your project">Start Your Project</PremiumButton>
@@ -515,7 +410,7 @@ function Navbar() {
     >
       <div className="text-xs md:text-sm font-light tracking-[0.2em] md:tracking-[0.3em] uppercase mix-blend-difference pointer-events-auto flex items-center gap-2 md:gap-4 whitespace-nowrap">
         <img src="/logo.png" alt="Marzverse - AI Automation, AI Chatbots and Modern Web Development Agency" className="h-10 md:h-16 w-auto object-contain shrink-0" />
-        <span>MARZ<span className="text-[#FF8A00]">VERSE</span></span>
+        <span>MARZ<span className="text-[#FF6A00]">VERSE</span></span>
       </div>
     </motion.nav>
   );
@@ -523,11 +418,11 @@ function Navbar() {
 
 function Footer() {
   return (
-    <footer className="relative z-10 w-full py-12 px-8 md:px-16 border-t border-white/10 bg-black/20 backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-6">
-      <div className="text-xs font-light tracking-[0.2em] uppercase text-[#BFBFBF] min-w-0 text-center md:text-left">
+    <footer className="relative z-10 w-full py-12 px-8 md:px-16 border-t border-white/10 bg-black/40 backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="text-xs font-light tracking-[0.2em] uppercase text-[#A3A3A3] min-w-0 text-center md:text-left">
         © 2026 Marzverse
       </div>
-      <div className="flex flex-wrap gap-8 text-xs font-light tracking-[0.2em] uppercase text-[#BFBFBF] min-w-0 justify-center">
+      <div className="flex flex-wrap gap-8 text-xs font-light tracking-[0.2em] uppercase text-[#A3A3A3] min-w-0 justify-center">
         <a 
           href="https://x.com/MARZ_VERSE" 
           target="_blank" 
@@ -540,7 +435,7 @@ function Footer() {
           href="https://www.linkedin.com/company/marzverse/" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="group flex items-center gap-2 hover:text-[#FFA94D] transition-colors"
+          className="group flex items-center gap-2 hover:text-[#FF6A00] transition-colors"
         >
           <LinkedinIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
         </a>
@@ -548,39 +443,15 @@ function Footer() {
           href="https://www.instagram.com/marz_verse_tech/" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="group flex items-center gap-2 hover:text-[#FFA94D] transition-colors"
+          className="group flex items-center gap-2 hover:text-[#FF6A00] transition-colors"
         >
           <InstagramIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
         </a>
       </div>
-      <a href="mailto:contact@marzverse.com" className="text-xs font-light tracking-[0.2em] uppercase text-[#BFBFBF] hover:text-[#FFA94D] transition-colors cursor-pointer whitespace-nowrap min-w-0 text-center md:text-right">
+      <a href="mailto:contact@marzverse.com" className="text-xs font-light tracking-[0.2em] uppercase text-[#A3A3A3] hover:text-[#FF6A00] transition-colors cursor-pointer whitespace-nowrap min-w-0 text-center md:text-right">
         contact@marzverse.com
       </a>
     </footer>
-  );
-}
-
-// ==========================================
-// LOADER
-// ==========================================
-function Loader() {
-  return (
-    <motion.div
-      exit={{ opacity: 0 }}
-      transition={{ duration: 1.5, ease: "easeInOut" }}
-      className="fixed inset-0 z-[100] flex items-center justify-center"
-      style={{ background: "radial-gradient(circle at center, #050505 0%, #000000 100%)" }}
-    >
-      <div className="flex flex-col items-center gap-6">
-        <motion.span 
-          animate={{ opacity: [0.2, 1, 0.2] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="text-[#FFFFFF] font-light tracking-[0.5em] uppercase text-xs"
-        >
-          Loading Experience
-        </motion.span>
-      </div>
-    </motion.div>
   );
 }
 
@@ -594,12 +465,11 @@ function HeroAmbientEffects() {
       <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-[#3B82F6] opacity-[0.03] blur-[120px] rounded-full mix-blend-screen" />
       <div className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] bg-[#8B5CF6] opacity-[0.02] blur-[120px] rounded-full mix-blend-screen" />
       
-      {/* Soft Orange Glows behind Spheres */}
-      <div className="absolute top-1/2 right-[10%] -translate-y-1/2 w-[30%] h-[50%] bg-[#FF8A00] opacity-[0.05] blur-[100px] rounded-full mix-blend-screen" />
-      <div className="absolute top-1/2 left-[10%] -translate-y-1/2 w-[30%] h-[50%] bg-[#FF8A00] opacity-[0.05] blur-[100px] rounded-full mix-blend-screen" />
+      {/* Soft Orange Glow behind Right Sphere - Left side is kept pure and clean black */}
+      <div className="absolute top-1/2 right-[5%] -translate-y-1/2 w-[35%] h-[55%] bg-[#FF6A00] opacity-[0.06] blur-[120px] rounded-full mix-blend-screen" />
       
       {/* Minimal Floating Particles */}
-      {[...Array(12)].map((_, i) => (
+      {[...Array(10)].map((_, i) => (
         <motion.div
           key={i}
           initial={{ 
@@ -608,7 +478,7 @@ function HeroAmbientEffects() {
             x: Math.cos(i * 78.233) * 500 
           }}
           animate={{ 
-            opacity: [0, 0.4, 0],
+            opacity: [0, 0.35, 0],
             y: `+=${Math.sin(i * 45.123) * 50}`,
             x: `+=${Math.cos(i * 32.456) * 50}` 
           }}
@@ -618,7 +488,7 @@ function HeroAmbientEffects() {
             ease: "linear"
           }}
           className={`absolute top-1/2 left-1/2 w-1 h-1 rounded-full blur-[1px] ${
-            i % 3 === 0 ? "bg-[#FF8A00]" : i % 3 === 1 ? "bg-[#3B82F6]" : "bg-[#8B5CF6]"
+            i % 3 === 0 ? "bg-[#FF6A00]" : i % 3 === 1 ? "bg-[#3B82F6]" : "bg-[#8B5CF6]"
           }`}
         />
       ))}

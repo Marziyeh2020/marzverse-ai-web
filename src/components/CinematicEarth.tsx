@@ -57,7 +57,7 @@ const vertexShader = `
     
     // 4. Core Zone: Reduced repulsion to match the gentle pull
     if (dist < 2.0) {
-      float push = pow((2.0 - dist) / 2.0, 2.0) * 1.78; 
+      float push = pow(clamp((2.0 - dist) / 2.0, 0.0, 1.0), 2.0) * 1.78; 
       force -= push;
     }
     
@@ -80,7 +80,7 @@ const vertexShader = `
 
     vec3 viewDir = normalize(cameraPosition - finalWorldPos);
     vec3 normal = normalize((modelMatrix * vec4(position, 0.0)).xyz);
-    float ndotv = max(0.0, dot(viewDir, normal));
+    float ndotv = clamp(dot(viewDir, normal), 0.0, 1.0);
     
     // Interpolate from center color to primary color for 3D depth
     vec3 baseCol = mix(uPrimaryColor, uCenterColor, ndotv);
@@ -90,7 +90,7 @@ const vertexShader = `
     baseCol = mix(baseCol, uHighlightColor, highlightIntensity);
     
     // Fresnel / Edge Lighting
-    float fresnel = pow(1.0 - ndotv, 1.3);
+    float fresnel = pow(clamp(1.0 - ndotv, 0.0, 1.0), 1.3);
     
     // Intense Edge Contrast
     vec3 finalCol = mix(baseCol, uHighlightColor, fresnel * 0.8); 
@@ -106,7 +106,8 @@ const vertexShader = `
     vec4 mvPosition = viewMatrix * vec4(finalWorldPos, 1.0);
     
     // Massive mobile scale boost
-    float calculatedSize = ((22.0 * uMobileMultiplier) / -mvPosition.z) * (1.0 + aRandom * 0.5);
+    float depthVal = max(0.1, -mvPosition.z);
+    float calculatedSize = ((22.0 * uMobileMultiplier) / depthVal) * (1.0 + aRandom * 0.5);
     // Ensure minimum pixel size so it never disappears, and cap at 64.0 to prevent mobile GPU driver crashes
     gl_PointSize = clamp(calculatedSize, 4.0, 64.0);
     
@@ -130,10 +131,10 @@ const fragmentShader = `
     if (distToCenter > maxDist) discard;
     
     // Crisp solid core
-    float core = smoothstep(0.12, 0.0, distToCenter);
+    float core = clamp(1.0 - (distToCenter / 0.12), 0.0, 1.0);
     
     // Soft glow halo on mobile, tight halo on desktop
-    float halo = smoothstep(maxDist, 0.12, distToCenter);
+    float halo = clamp(1.0 - (distToCenter / maxDist), 0.0, 1.0);
     
     // 2. Alpha & Depth Fading (boosted minAlpha on mobile for better contrast and perceived depth)
     float minAlpha = mix(0.1 * uMobileMultiplier, 0.35, uIsMobile);
@@ -234,14 +235,14 @@ function ParticleGlobe({
     uPrimaryColor: { value: primaryColor },
     uHighlightColor: { value: highlightColor },
     uCenterColor: { value: centerColor },
-    uMobileMultiplier: { value: isMobile ? 0.75 : 1.0 }, // Increased from 0.4 to 0.75 for 1.875x scale boost
+    uMobileMultiplier: { value: isMobile ? 0.6 : 1.0 },
     uIsMobile: { value: isMobile ? 1.0 : 0.0 }
   }), [primaryColor, highlightColor, centerColor]); // Removed isMobile from dependency array to avoid recreating uniforms object
 
   // Explicitly update mobile multiplier when it changes
   useEffect(() => {
     if (shaderRef.current) {
-      shaderRef.current.uniforms.uMobileMultiplier.value = isMobile ? 0.75 : 1.0;
+      shaderRef.current.uniforms.uMobileMultiplier.value = isMobile ? 0.6 : 1.0;
       shaderRef.current.uniforms.uIsMobile.value = isMobile ? 1.0 : 0.0;
     }
   }, [isMobile]);
@@ -357,7 +358,7 @@ function InteractiveScene() {
       const desktop = window.innerWidth >= 1024;
       setIsMobile(mobile);
       setIsDesktop(desktop);
-      setParticleCount(mobile ? 800 : 6000); // 800 particles for better mobile loop definition
+      setParticleCount(mobile ? 600 : 6000);
       
       if (!desktop) {
         isHoveringRef.current = false;
@@ -381,11 +382,10 @@ function InteractiveScene() {
     };
   }, []);
 
-    // Configuration for Single Iconic Sphere
-    // On mobile, bring them closer together to fit the narrow portrait screen
-    const GLOBE_POS_1 = new THREE.Vector3(isMobile ? 1.4 : 2.8, 0, 0); 
-    const GLOBE_POS_2 = new THREE.Vector3(isMobile ? -1.4 : -2.8, 0, 0); // Second identical sphere placed on the left
-    const GLOBE_RADIUS = isMobile ? 1.2 : 1.65; 
+  // Configuration for Single Right Iconic Sphere
+  // On mobile, position sphere lower and smaller to stay well clear of text
+  const GLOBE_POS = isMobile ? new THREE.Vector3(0, -1.9, -1.0) : new THREE.Vector3(2.5, 0, 0); 
+  const GLOBE_RADIUS = isMobile ? 0.95 : 1.65; 
 
   return (
     <>
@@ -399,27 +399,14 @@ function InteractiveScene() {
         }} 
       />
       
-      {/* First Sphere (Original) */}
+      {/* Single Interactive Sphere (Right side on desktop, subtle background on mobile) */}
       <ParticleGlobe 
         radius={GLOBE_RADIUS}
         particleCount={particleCount}
-        groupPosition={[GLOBE_POS_1.x, GLOBE_POS_1.y, GLOBE_POS_1.z]}
+        groupPosition={[GLOBE_POS.x, GLOBE_POS.y, GLOBE_POS.z]}
         primaryColor={new THREE.Vector3(0.85, 0.85, 0.85)} // Silver #D9D9D9
         highlightColor={new THREE.Vector3(1.0, 1.0, 1.0)} // Pure White #FFFFFF
-        centerColor={new THREE.Vector3(0.1, 0.1, 0.1)} // Deep Graphite for core
-        hitPointRef={hitPointRef} 
-        isHoveringRef={isHoveringRef} 
-        isMobile={isMobile}
-      />
-
-      {/* Second Sphere (Identical Copy) */}
-      <ParticleGlobe 
-        radius={GLOBE_RADIUS}
-        particleCount={particleCount}
-        groupPosition={[GLOBE_POS_2.x, GLOBE_POS_2.y, GLOBE_POS_2.z]}
-        primaryColor={new THREE.Vector3(0.85, 0.85, 0.85)} // Silver #D9D9D9
-        highlightColor={new THREE.Vector3(1.0, 1.0, 1.0)} // Pure White #FFFFFF
-        centerColor={new THREE.Vector3(0.1, 0.1, 0.1)} // Deep Graphite for core
+        centerColor={new THREE.Vector3(0.08, 0.08, 0.08)} // Deep Graphite for core
         hitPointRef={hitPointRef} 
         isHoveringRef={isHoveringRef} 
         isMobile={isMobile}
@@ -440,14 +427,18 @@ function InteractiveScene() {
 }
 
 export default function CinematicEarth() {
+  const [mounted, setMounted] = useState(false);
   const [dpr, setDpr] = useState<[number, number]>([1, 2]);
 
   useEffect(() => {
-    console.log("[MARZVERSE] Canvas mounted");
-    
+    setMounted(true);
     // Check for mobile on mount to set a lower DPR limit (1.25) to avoid crashing older mobile GPUs
     setDpr(window.innerWidth < 768 ? [1, 1.25] : [1, 2]);
   }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>

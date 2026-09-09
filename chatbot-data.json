@@ -1,278 +1,132 @@
 [
   {
-    "question": "What is Marzverse?",
-    "answer": "Marzverse is a startup specializing in modern websites, AI chatbots, and AI automation solutions."
+    "category": "About MarzVerse",
+    "question": "What is MarzVerse?",
+    "answer": "MarzVerse is a digital studio that designs and builds high-performance websites, AI assistants, and business automation systems for startups, service businesses, and growing brands."
   },
   {
-    "question": "What services do you offer?",
-    "answer": "We offer modern website development, AI chatbots, AI automation solutions, and custom AI tools based on your business needs."
+    "category": "About MarzVerse",
+    "question": "What services does MarzVerse offer?",
+    "answer": "We specialize in three core services: 1) Website Design & Development, 2) AI Chatbots & Assistants, and 3) CRM & Business Automation."
   },
   {
-    "question": "Are you a startup?",
-    "answer": "Yes. Marzverse is a modern startup focused on digital experiences and AI-powered solutions."
+    "category": "About MarzVerse",
+    "question": "Who does MarzVerse work with?",
+    "answer": "We work with startups, corporate businesses, local service providers, e-commerce brands, healthcare providers, salons, and modern companies seeking practical digital growth."
   },
   {
-    "question": "What type of websites do you build?",
-    "answer": "We build modern, responsive websites ranging from simple one-page websites to multi-page business websites with optional AI chatbot integration."
+    "category": "About MarzVerse",
+    "question": "Why choose MarzVerse?",
+    "answer": "We combine modern aesthetic design with practical engineering—building fast, mobile-friendly websites and AI systems that help you attract clients, save operational time, and scale smoothly."
   },
   {
-    "question": "Are your websites mobile friendly?",
-    "answer": "Yes. All our websites are fully responsive and optimized for desktop, tablet, and mobile devices."
+    "category": "Website Design & Development",
+    "question": "What is included in your Website Design & Development service?",
+    "answer": "We build fast, responsive, and conversion-focused websites featuring custom UI/UX design, mobile-first development, clean SEO-ready architecture, performance optimization, and seamless contact integrations."
   },
   {
-    "question": "Do you create custom websites?",
-    "answer": "Yes. Every website is designed according to the client's needs, brand identity, and business goals."
+    "category": "Website Design & Development",
+    "question": "Are your websites mobile-friendly and fast?",
+    "answer": "Yes. Every website we build is 100% mobile-first, optimized for lightning-fast load times, and thoroughly tested across all screen sizes."
   },
   {
-    "question": "How long does it take to build a website?",
-    "answer": "Most projects are completed within 1 to 3 weeks depending on the scope, content, and requested features."
+    "category": "Website Design & Development",
+    "question": "Do you redesign existing websites?",
+    "answer": "Yes. We can redesign and upgrade outdated websites into modern, high-converting digital experiences with enhanced performance and mobile responsiveness."
   },
   {
-    "question": "Do you provide website maintenance?",
-    "answer": "Yes. Maintenance and support options can be discussed based on your project needs."
+    "category": "Website Design & Development",
+    "question": "Do you handle domain and hosting setup?",
+    "answer": "Yes. We guide you through domain connection, hosting configuration, SSL security certificates, and deployment."
   },
   {
-    "question": "Can you create AI chatbots?",
-    "answer": "Yes. We build custom AI chatbots that can answer customer questions, collect leads, and improve user engagement."
+    "category": "AI Chatbots & Assistants",
+    "question": "What are MarzVerse AI Chatbots & Assistants?",
+    "answer": "We build intelligent AI assistants trained on your business data to answer customer questions 24/7, qualify incoming leads, support bookings, and provide natural multilingual communication."
   },
   {
-    "question": "What can a chatbot do?",
-    "answer": "A chatbot can answer common questions, collect leads, provide service information, guide visitors, and assist customers 24/7."
+    "category": "AI Chatbots & Assistants",
+    "question": "What can an AI chatbot do for my business?",
+    "answer": "An AI assistant answers common inquiries instantly, captures visitor contact details, guides users to services, reduces customer support workload, and works around the clock."
   },
   {
-    "question": "Can the chatbot be customized?",
-    "answer": "Yes. The chatbot can be customized according to your business, services, tone of voice, and branding."
+    "category": "AI Chatbots & Assistants",
+    "question": "Can the chatbot speak multiple languages?",
+    "answer": "Yes. Our AI assistants automatically detect and converse in multiple languages including English, Turkish, Persian, Arabic, German, Russian, and more."
   },
   {
-    "question": "What is AI automation?",
-    "answer": "AI automation helps businesses automate repetitive tasks, improve efficiency, save time, and reduce manual work."
+    "category": "CRM & Business Automation",
+    "question": "What is CRM & Business Automation?",
+    "answer": "We connect your business tools to organize customer leads, automate repetitive manual tasks, manage booking and follow-up workflows, send automated notifications, and build custom dashboards."
   },
   {
-    "question": "Can AI automation help my business?",
-    "answer": "Yes. AI automation can support customer service, lead collection, content generation, appointment workflows, and internal business processes."
+    "category": "CRM & Business Automation",
+    "question": "How does automation save my business time?",
+    "answer": "Automation eliminates repetitive tasks like manual lead entry, appointment reminders, invoice tracking, and customer follow-ups—allowing your team to focus on serving clients and closing deals."
   },
   {
-    "question": "Do you offer custom automation solutions?",
-    "answer": "Yes. We design automation solutions based on your specific business requirements."
+    "category": "Project Process",
+    "question": "What is your project process?",
+    "answer": "We follow a 4-step collaborative process: 1) Discover (understand your goals and scope), 2) Design (plan structure and visual direction), 3) Build (develop and integrate systems), and 4) Launch (test, publish, and provide ongoing support)."
   },
   {
-    "question": "How much does a website cost?",
-    "answer": "Pricing depends on the project requirements. Our services range from simple websites to advanced websites with AI features. Contact us for a custom quote."
+    "category": "Project Process",
+    "question": "How long does a project take to complete?",
+    "answer": "Project timing depends on the scope, number of pages, custom features, and integrations. We provide an estimated timeline during our initial project discovery."
   },
   {
-    "question": "How much does a chatbot cost?",
-    "answer": "Chatbot pricing depends on the required features, level of customization, and integration needs."
+    "category": "Pricing",
+    "question": "How much does a website or AI system cost?",
+    "answer": "Project pricing depends on the scope, number of pages, design requirements, integrations and automation needs. Share your project details through the Start a Project form for a tailored quote."
   },
   {
-    "question": "Do you offer custom quotes?",
-    "answer": "Yes. Every project receives a tailored quote based on its scope, features, and requirements."
+    "category": "Portfolio Projects",
+    "question": "Can you show me examples of your work?",
+    "answer": "Yes! Our selected portfolio includes: Sadie's Alteration (Business Website), Akçetin Mühendislik (Corporate Website), Hacıbey (Ordering Web App), FaturaAsistan (Mobile SaaS), and Global Bridge Health (Healthcare Website)."
   },
   {
-    "question": "How can I contact Marzverse?",
-    "answer": "You can contact us through the contact form on our website."
+    "category": "Portfolio Projects",
+    "question": "What is Sadie's Alteration?",
+    "answer": "Sadie's Alteration (https://www.sadiesalteration.com/) is a modern, responsive business website for an alteration studio featuring online booking, service showcase, and easy customer contact."
   },
   {
-    "question": "How do I start a project?",
-    "answer": "Simply contact us with your project idea, and we will guide you through the next steps."
+    "category": "Portfolio Projects",
+    "question": "What is Akçetin Mühendislik?",
+    "answer": "Akçetin Mühendislik (https://akcetinmuhendislik.com/) is a corporate engineering website featuring SEO-optimized structure, detailed technical service pages, mobile-friendly design, and fast performance."
   },
   {
-    "question": "Why should I choose Marzverse?",
-    "answer": "We focus on modern design, user experience, AI-powered solutions, and personalized service for every client."
+    "category": "Portfolio Projects",
+    "question": "What is Hacıbey?",
+    "answer": "Hacıbey (https://xn--hacbey-r9a.com/) is a mobile-first ordering web application (PWA) with customer ordering, product management, and a dedicated admin dashboard."
   },
   {
-    "question": "Do you build websites for beauty centers?",
-    "answer": "Yes. We create elegant, modern, and functional websites for beauty centers, salons, clinics, and aesthetic businesses."
+    "category": "Portfolio Projects",
+    "question": "What is FaturaAsistan?",
+    "answer": "FaturaAsistan is a mobile SaaS concept for invoice management featuring document uploads, AI-powered summaries, and organized Excel financial reporting (Private Project)."
   },
   {
-    "question": "Do you offer discounts?",
-    "answer": "Yes. We may offer special discounts depending on the project, while maintaining the quality of the website and service."
+    "category": "Portfolio Projects",
+    "question": "What is Global Bridge Health?",
+    "answer": "Global Bridge Health (https://www.globalbridgehealth.com/) is a healthcare platform featuring health cost comparison, clear navigation, mobile-friendly design, and active AI chatbot support."
   },
   {
-    "question": "Do you build websites for salons?",
-    "answer": "Yes. We build stylish and mobile-friendly websites for salons, beauty studios, hairdressers, and aesthetic centers."
+    "category": "Beauty and Salon Solutions",
+    "question": "Do you create websites for beauty salons and clinics?",
+    "answer": "Yes. We build stylish, mobile-friendly websites for beauty centers, clinics, and studios featuring treatment menus, before-and-after galleries, reviews, online booking, and WhatsApp contact links."
   },
   {
-    "question": "Can you add online booking to my website?",
-    "answer": "Yes. We can add booking forms, appointment request forms, or connect your website to an external booking system depending on your needs."
+    "category": "Beauty and Salon Solutions",
+    "question": "Can salon clients book appointments online or via WhatsApp?",
+    "answer": "Yes. We integrate appointment booking flows, WhatsApp inquiry buttons, and automated booking reminders tailored to your salon's workflow."
   },
   {
-    "question": "Can you connect the website to WhatsApp?",
-    "answer": "Yes. We can add WhatsApp buttons so visitors can contact your business directly and easily."
+    "category": "Contact and Starting a Project",
+    "question": "How can I contact MarzVerse or start a project?",
+    "answer": "You can start a project by clicking 'Start a Project' on our website, emailing us at contact@marzverse.com, or chatting with us directly on WhatsApp at +90 544 144 59 01 (https://wa.me/905441445901)."
   },
   {
-    "question": "Can you help us get more clients?",
-    "answer": "A professional website can improve your online presence, make your business look more trustworthy, and help visitors contact you more easily."
-  },
-  {
-    "question": "Do you write the website content?",
-    "answer": "Yes. We can help write clear and professional website content based on your services and brand style."
-  },
-  {
-    "question": "Do you redesign old websites?",
-    "answer": "Yes. We can redesign outdated websites and turn them into modern, responsive, and user-friendly websites."
-  },
-  {
-    "question": "Do I need to provide photos?",
-    "answer": "You can provide your own photos, or we can help you choose suitable visuals that match your brand and website style."
-  },
-  {
-    "question": "Can you create a website without technical knowledge from my side?",
-    "answer": "Yes. You do not need technical knowledge. We guide you through the process and handle the design and development."
-  },
-  {
-    "question": "Can you create landing pages?",
-    "answer": "Yes. We create landing pages for campaigns, services, product launches, and lead collection."
-  },
-  {
-    "question": "Can you help with SEO?",
-    "answer": "Yes. We can apply basic SEO practices such as clear page structure, optimized content, proper headings, meta descriptions, and mobile-friendly design."
-  },
-  {
-    "question": "Will I be able to update the website later?",
-    "answer": "This depends on the platform and setup. We can discuss update options and choose a solution that fits your needs."
-  },
-  {
-    "question": "Can you make the website match my brand colors?",
-    "answer": "Yes. We design the website according to your brand colors, logo, style, and overall visual identity."
-  },
-  {
-    "question": "Do you work with businesses outside beauty and aesthetics?",
-    "answer": "Yes. We work with startups, small businesses, service providers, and brands from different industries."
-  },
-  {
-    "question": "How can a website help my beauty center get more clients?",
-    "answer": "A professional website helps visitors understand your services, trust your business, view your work, and contact you easily through forms or WhatsApp."
-  },
-  {
-    "question": "Why do I need a website if I already have Instagram?",
-    "answer": "Instagram is useful, but a website gives your business a more professional image, organizes your services clearly, and gives clients one reliable place to learn about you and contact you."
-  },
-  {
-    "question": "Can you connect my website to Instagram?",
-    "answer": "Yes. We can link your Instagram profile, display selected content, and make it easy for visitors to move between your website and social media."
-  },
-  {
-    "question": "Can clients book appointments through the website?",
-    "answer": "Yes. We can add appointment request forms, booking buttons, WhatsApp booking links, or connect your website to an external booking system."
-  },
-  {
-    "question": "Can the website show our beauty services clearly?",
-    "answer": "Yes. We can organize your services, prices, descriptions, photos, and special offers in a clear and attractive way."
-  },
-  {
-    "question": "Can you make my beauty center look more premium online?",
-    "answer": "Yes. We design websites with modern visuals, elegant layouts, responsive design, and brand-focused details to help your business look more professional and premium."
-  },
-  {
-    "question": "Can you create a gallery for before-and-after photos?",
-    "answer": "Yes. We can create a clean gallery section to showcase your work, treatments, transformations, and client results."
-  },
-  {
-    "question": "Can you add customer reviews to the website?",
-    "answer": "Yes. We can add testimonials, client reviews, ratings, and social proof to help build trust with new visitors."
-  },
-  {
-    "question": "Can you add WhatsApp booking buttons?",
-    "answer": "Yes. We can add WhatsApp buttons in important sections so potential clients can contact you quickly."
-  },
-  {
-    "question": "Can you create a special offer page?",
-    "answer": "Yes. We can create landing pages for campaigns, seasonal offers, new treatments, or beauty packages."
-  },
-  {
-    "question": "Can you help write service descriptions?",
-    "answer": "Yes. We can help write clear and attractive service descriptions that explain your treatments and encourage visitors to contact you."
-  },
-  {
-    "question": "Can you make my website suitable for Instagram visitors?",
-    "answer": "Yes. We can design the website so Instagram visitors quickly see your services, offers, photos, and contact options."
-  },
-  {
-    "question": "Can the website include prices?",
-    "answer": "Yes. We can include prices, starting prices, treatment packages, or keep pricing hidden and encourage visitors to contact you for details."
-  },
-  {
-    "question": "Can you create a website for a new beauty salon?",
-    "answer": "Yes. We can create a professional website for new beauty salons, including branding direction, service sections, contact forms, and visual style."
-  },
-  {
-    "question": "Can you redesign my old beauty website?",
-    "answer": "Yes. We can redesign outdated beauty websites and turn them into modern, mobile-friendly, and elegant websites."
-  },
-  {
-    "question": "Can the chatbot answer questions about my beauty services?",
-    "answer": "Yes. We can customize the chatbot with your services, opening hours, prices, booking process, location, and frequently asked questions."
-  },
-  {
-    "question": "Can the chatbot collect client information?",
-    "answer": "Yes. We can customize the chatbot to collect names, phone numbers, service interests, and appointment requests depending on your needs."
-  },
-  {
-    "question": "Can the chatbot work outside business hours?",
-    "answer": "Yes. The chatbot can answer common questions and collect leads 24/7, even when your team is unavailable."
-  },
-  {
-    "question": "Can the website help clients find our location?",
-    "answer": "Yes. We can add your address, Google Maps link, working hours, and contact details clearly on the website."
-  },
-  {
-    "question": "Can you make the website match my salon's style?",
-    "answer": "Yes. We design the website according to your salon's colors, atmosphere, target audience, and brand personality."
-  },
-  {
-    "question": "I am not sure what kind of website I need.",
-    "answer": "No problem. Contact us and tell us about your business, services, and goals. We can suggest the most suitable website structure for you."
-  },
-  {
-    "question": "I have a small beauty business. Can you still help?",
-    "answer": "Yes. We work with small businesses and can create a website that fits your current stage while still looking professional."
-  },
-  {
-    "question": "I do not have website content ready. Can you help?",
-    "answer": "Yes. We can help structure your pages and write clear content based on your services, brand, and target clients."
-  },
-  {
-    "question": "Can I start with a simple website first?",
-    "answer": "Yes. You can start with a simple website and add more features later, such as booking, chatbot support, or automation."
-  },
-  {
-    "question": "How do I know what price package is right for me?",
-    "answer": "Contact us with your business type and goals. We will suggest a suitable option based on your needs and budget."
-  },
-  {
-    "question": "Can you suggest what my website should include?",
-    "answer": "Yes. For beauty businesses, we usually recommend a homepage, services section, gallery, reviews, contact section, WhatsApp button, and optional booking system."
-  },
-  {
-    "question": "Do you provide hosting and domain setup?",
-    "answer": "Yes. We can guide you through hosting and domain setup depending on your chosen platform."
-  },
-  {
-    "question": "Can you create multilingual websites?",
-    "answer": "Yes. We can create websites in multiple languages depending on your target audience."
-  },
-  {
-    "question": "Can you create Instagram-friendly websites?",
-    "answer": "Yes. We can create websites that work well with Instagram traffic and make it easy for visitors to contact you or book a service."
-  },
-  {
-    "question": "What is included in the Marzverse Premium Beauty Center Website?",
-    "answer": "The premium beauty center website includes a cinematic scroll experience, luxury branding, responsive design, treatment sections, AI beauty analysis flow, before-and-after showcase, reviews, contact and booking features, multilingual support, and an AI chatbot."
-  },
-  {
-    "question": "What is AI Beauty Analysis?",
-    "answer": "AI Beauty Analysis is an interactive website experience where visitors can upload a photo, go through a skin, hair, or beauty consultation flow, and receive personalized treatment recommendations before being redirected to WhatsApp or booking."
-  },
-  {
-    "question": "Does the AI analysis replace a real consultation?",
-    "answer": "No. The AI analysis is designed to guide visitors and suggest suitable services, but final treatment decisions should always be confirmed by the beauty center or a qualified specialist."
-  },
-  {
-    "question": "Can the website support multiple languages?",
-    "answer": "Yes. The website can support Turkish, English, Arabic, Russian, and Persian. This can include website content, chatbot answers, AI analysis results, and WhatsApp messages."
-  },
-  {
-    "question": "What does each treatment page include?",
-    "answer": "Each treatment can include a hero image, description, how it works, benefits, suitable candidates, expected results, session duration, estimated pricing, and gallery."
+    "category": "Contact and Starting a Project",
+    "question": "What happens after I submit a project inquiry?",
+    "answer": "Our team reviews your project details and reaches out via email or WhatsApp with recommended next steps, architecture options, and a tailored quote."
   }
 ]

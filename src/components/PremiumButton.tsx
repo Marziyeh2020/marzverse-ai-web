@@ -34,7 +34,7 @@ export default function PremiumButton({
       aria-controls={ariaControls}
       whileHover="hover"
       initial="initial"
-      className={`group relative overflow-hidden px-12 py-4 border border-white/10 bg-black/40 backdrop-blur-md rounded-none flex items-center justify-center ${className}`}
+      className={`group relative overflow-hidden px-10 sm:px-12 py-4 border border-white/15 bg-black/50 backdrop-blur-md rounded-none flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-[#FF6A00]/50 hover:shadow-[0_0_25px_rgba(255,106,0,0.25)] ${className}`}
     >
       {/* Subtle ambient surface glow */}
       <motion.div
@@ -42,28 +42,28 @@ export default function PremiumButton({
           initial: { opacity: 0 },
           hover: { opacity: 1 }
         }}
-        transition={{ duration: 2, ease: [0.25, 1, 0.5, 1] }}
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,255,136,0.08)_0%,transparent_100%)] pointer-events-none"
+        transition={{ duration: 1.5, ease: [0.25, 1, 0.5, 1] }}
+        className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,106,0,0.15)_0%,transparent_100%)] pointer-events-none"
       />
       
       {/* Slow cinematic light sweep */}
       <motion.div
         variants={{
           initial: { x: "-100%", opacity: 0 },
-          hover: { x: "100%", opacity: 0.25 }
+          hover: { x: "100%", opacity: 0.3 }
         }}
-        transition={{ duration: 2.5, ease: [0.25, 1, 0.5, 1] }}
-        className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-[rgba(0,255,136,0.3)] to-transparent skew-x-[-20deg] pointer-events-none"
+        transition={{ duration: 2.0, ease: [0.25, 1, 0.5, 1] }}
+        className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.35)] to-transparent skew-x-[-20deg] pointer-events-none"
       />
 
       {/* Button Content with subtle scale */}
       <motion.span
         variants={{
           initial: { scale: 1 },
-          hover: { scale: 1.015 }
+          hover: { scale: 1.02 }
         }}
-        transition={{ duration: 1.8, ease: [0.25, 1, 0.5, 1] }}
-        className="relative z-10 text-xs font-light tracking-[0.4em] uppercase text-[#FF8A00]/70 group-hover:text-[#FFA94D] transition-colors duration-1000"
+        transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
+        className="relative z-10 text-xs sm:text-sm font-semibold tracking-[0.25em] uppercase text-[#FF6A00] group-hover:text-[#FF8533] transition-colors duration-500"
       >
         {children}
       </motion.span>

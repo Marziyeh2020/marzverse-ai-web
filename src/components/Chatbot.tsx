@@ -1,8 +1,22 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useSyncExternalStore } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, X, Globe, Zap, DollarSign, Mail, Send, ChevronRight, Loader2 } from 'lucide-react';
+import {
+  X,
+  Globe,
+  Bot,
+  Workflow,
+  FolderGit2,
+  DollarSign,
+  Send,
+  Loader2,
+  ExternalLink,
+  MessageSquare,
+  Sparkles,
+  ArrowRight,
+  RotateCcw
+} from 'lucide-react';
 
 interface Message {
   id: string;
@@ -10,80 +24,224 @@ interface Message {
   text: string;
 }
 
-export default function Chatbot() {
+interface ChatbotProps {
+  onOpenContact?: () => void;
+}
+
+const VERIFIED_URLS = [
+  'https://www.sadiesalteration.com/',
+  'https://akcetinmuhendislik.com/',
+  'https://xn--hacbey-r9a.com/',
+  'https://www.globalbridgehealth.com/',
+  'https://wa.me/905441445901',
+  'mailto:contact@marzverse.com'
+];
+
+const emptySubscribe = () => () => {};
+
+export default function Chatbot({ onOpenContact }: ChatbotProps) {
+  const isMounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', role: 'bot', text: "Hello, I'm Marzverse Assistant.\nHow can I help you today?" }
+    {
+      id: '1',
+      role: 'bot',
+      text: "Hello! I'm Marzy, the MarzVerse AI Assistant.\nHow can I help you grow your business today?"
+    }
   ]);
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showTopics, setShowTopics] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
-    if (isOpen) scrollToBottom();
-  }, [messages, isOpen]);
+    if (isOpen && isMounted) {
+      scrollToBottom();
+      // Auto-focus input on desktop after mount
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        inputRef.current?.focus();
+      }
+    }
+  }, [messages, isOpen, isMounted]);
 
   const handleSend = async (text: string) => {
     if (!text.trim() || isLoading) return;
-    
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', text: text.trim() };
-    setMessages(prev => [...prev, userMsg]);
-    setInputValue("");
+
+    const userText = text.trim();
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', text: userText };
+
+    // Prepare history
+    const historyToSend = messages
+      .filter((m) => m.id !== '1')
+      .map((m) => ({
+        role: (m.role === 'bot' ? 'assistant' : 'user') as 'assistant' | 'user',
+        content: m.text
+      }));
+
+    setMessages((prev) => [...prev, userMsg]);
+    setInputValue('');
     setIsLoading(true);
+    setShowTopics(false); // Collapse topics after conversation starts
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text.trim() })
+        body: JSON.stringify({
+          message: userText,
+          history: historyToSend
+        })
       });
-      const data = await res.json();
-      
-      const botMsg: Message = { id: (Date.now() + 1).toString(), role: 'bot', text: data.reply || "Error connecting to AI." };
-      setMessages(prev => [...prev, botMsg]);
-    } catch (err) {
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'bot', text: "Sorry, an error occurred. Please try again." }]);
+
+      const data = await res.json().catch(() => null);
+      const botReply = data?.reply || "I'm experiencing a temporary connection issue. Please contact us directly at contact@marzverse.com or via WhatsApp.";
+
+      const botMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'bot',
+        text: botReply
+      };
+      setMessages((prev) => [...prev, botMsg]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: 'bot',
+          text: "I couldn't complete your request due to a network issue. Please reach out to us at contact@marzverse.com or on WhatsApp at +90 544 144 59 01."
+        }
+      ]);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       handleSend(inputValue);
     }
   };
 
-  const handleTopicClick = (topic: string) => {
-    handleSend(topic);
+  const handleQuickAction = (action: string) => {
+    if (action === 'start_project') {
+      setIsOpen(false);
+      if (onOpenContact) {
+        onOpenContact();
+      }
+      return;
+    }
+
+    const promptMap: Record<string, string> = {
+      websites: 'Tell me about your Website Design & Development services.',
+      chatbots: 'Tell me about your AI Chatbots & Assistants.',
+      automation: 'Tell me about your CRM & Business Automation systems.',
+      projects: 'Can you show me some of your recent portfolio projects?',
+      pricing: 'How does pricing work for your services?'
+    };
+
+    const promptText = promptMap[action];
+    if (promptText) {
+      handleSend(promptText);
+    }
+  };
+
+  const handleResetChat = () => {
+    setMessages([
+      {
+        id: Date.now().toString(),
+        role: 'bot',
+        text: "Conversation reset. How can I help you today?"
+      }
+    ]);
+    setShowTopics(true);
+  };
+
+  // Safe renderer for message text that turns verified URLs and emails into secure links
+  const renderMessageContent = (text: string) => {
+    // Regex for URLs and mailto
+    const urlPattern = /(https?:\/\/[^\s)]+|mailto:[^\s)]+|contact@marzverse\.com)/g;
+    const parts = text.split(urlPattern);
+
+    return parts.map((part, index) => {
+      if (part === 'contact@marzverse.com' || part === 'mailto:contact@marzverse.com') {
+        return (
+          <a
+            key={index}
+            href="mailto:contact@marzverse.com"
+            className="text-[#FF6A00] underline hover:text-[#FF8533] inline-flex items-center gap-0.5 break-all font-normal"
+          >
+            contact@marzverse.com
+          </a>
+        );
+      }
+
+      if (part.startsWith('http://') || part.startsWith('https://')) {
+        const cleanUrl = part.replace(/[.,;!]$/, '');
+        // Check if it's one of our verified domains or whatsapp
+        const isVerified = VERIFIED_URLS.some((v) => cleanUrl.startsWith(v.split('?')[0])) || cleanUrl.includes('wa.me');
+
+        if (isVerified) {
+          return (
+            <a
+              key={index}
+              href={cleanUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#FF6A00] underline hover:text-[#FF8533] inline-flex items-center gap-1 break-all font-medium"
+            >
+              <span>{cleanUrl.replace('https://', '').replace('www.', '').split('/')[0]}</span>
+              <ExternalLink className="w-3 h-3 inline shrink-0" />
+            </a>
+          );
+        }
+
+        return (
+          <span key={index} className="text-[#E0E0E0] break-all">
+            {part}
+          </span>
+        );
+      }
+
+      return <span key={index}>{part}</span>;
+    });
   };
 
   return (
     <>
       {/* Floating Action Button */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {!isOpen && (
           <motion.button
-            initial={{ scale: 0, opacity: 0 }}
+            key="chatbot-fab-button"
+            initial={isMounted ? { scale: 0, opacity: 0 } : false}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={() => setIsOpen(true)}
             aria-label="Open AI Assistant chat"
             aria-expanded={isOpen}
             aria-controls="chatbot-dialog"
-            className="fixed bottom-[calc(90px+env(safe-area-inset-bottom))] right-[calc(20px+env(safe-area-inset-right))] md:bottom-[40px] md:right-[40px] z-[9999] w-12 h-12 md:w-[72px] md:h-[72px] rounded-full border border-[#FF8A00]/20 bg-[#050505]/60 backdrop-blur-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,138,0,0.4)] hover:shadow-[0_0_30px_rgba(255,138,0,0.8)] hover:border-[#FF8A00]/50 transition-all duration-500 group"
+            className="fixed bottom-[calc(16px+env(safe-area-inset-bottom))] right-[calc(16px+env(safe-area-inset-right))] sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-[#FF6A00]/40 bg-[#050505]/90 backdrop-blur-xl flex items-center justify-center shadow-[0_0_25px_rgba(255,106,0,0.35)] hover:shadow-[0_0_35px_rgba(255,106,0,0.6)] hover:border-[#FF6A00] transition-all duration-300 group cursor-pointer"
           >
-            <div className="w-full h-full rounded-full overflow-hidden p-0">
-              <img 
-                src="/charachter.png" 
-                alt="Marzverse Assistant Avatar" 
-                className="w-full h-full rounded-full object-cover group-hover:scale-110 transition-transform duration-300" 
+            <div className="w-full h-full rounded-full overflow-hidden p-0.5">
+              <img
+                src="/charachter.png"
+                alt="Marzverse Assistant Avatar"
+                className="w-full h-full rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             </div>
+            {/* Subtle Online Dot */}
+            <span className="absolute top-0 right-0 w-3 h-3 bg-[#FF6A00] border-2 border-[#050505] rounded-full shadow-[0_0_8px_#FF6A00]" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -92,109 +250,198 @@ export default function Chatbot() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            key="chatbot-dialog-panel"
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
+            transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
             id="chatbot-dialog"
             role="dialog"
             aria-modal="false"
-            aria-label="AI Assistant Chat"
-            className="fixed bottom-[calc(150px+env(safe-area-inset-bottom))] md:bottom-[110px] left-0 right-0 mx-auto md:mx-0 md:left-auto md:right-[40px] z-50 w-[90vw] md:w-[380px] max-w-[420px] bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col font-sans"
+            aria-label="MarzVerse AI Assistant"
+            className="fixed bottom-[calc(16px+env(safe-area-inset-bottom))] sm:bottom-20 right-3 sm:right-6 md:right-8 z-40 w-[calc(100vw-24px)] sm:w-[390px] max-w-[420px] bg-[#0B0B0B] border border-white/15 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col font-sans"
           >
             {/* Header */}
-            <div className="p-4 md:p-5 border-b border-white/10 flex items-center justify-between bg-gradient-to-b from-white/[0.02] to-transparent">
-              <div className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full overflow-hidden border border-[#FF8A00]/30">
-                  <img 
-                    src="/charachter.png" 
-                    alt="Marzverse Assistant Avatar" 
-                    className="w-full h-full object-cover" 
+            <div className="p-3.5 sm:p-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-b from-white/[0.04] to-transparent">
+              <div className="flex items-center gap-3">
+                <div className="relative w-8 h-8 rounded-full overflow-hidden border border-[#FF6A00]/40 shrink-0">
+                  <img
+                    src="/charachter.png"
+                    alt="Marzverse Assistant Avatar"
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold tracking-wider text-white">
-                    MARZVERSE <span className="text-[#FF8A00]">ASSISTANT</span>
+                  <h3 className="text-xs sm:text-sm font-semibold tracking-wider text-[#F5F5F5] flex items-center gap-1.5">
+                    MARZVERSE <span className="text-[#FF6A00]">ASSISTANT</span>
                   </h3>
-                  <p className="text-[10px] text-[#BFBFBF] tracking-widest uppercase mt-0.5">AI POWERED</p>
+                  <p className="text-[10px] text-[#A3A3A3] tracking-widest uppercase">
+                    AI AGENT • ONLINE
+                  </p>
                 </div>
               </div>
-              <button 
-                onClick={() => setIsOpen(false)}
-                aria-label="Close AI Assistant chat"
-                className="text-[#BFBFBF] hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" strokeWidth={1.5} />
-              </button>
+
+              <div className="flex items-center gap-1">
+                {messages.length > 2 && (
+                  <button
+                    onClick={handleResetChat}
+                    aria-label="Reset conversation"
+                    title="Reset chat"
+                    className="text-[#777777] hover:text-[#F5F5F5] p-1.5 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsOpen(false)}
+                  aria-label="Close AI Assistant chat"
+                  className="text-[#A3A3A3] hover:text-[#F5F5F5] p-1.5 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={1.75} />
+                </button>
+              </div>
             </div>
 
-            <div className="p-5 md:p-5 h-[50vh] min-h-[350px] max-h-[400px] md:h-[400px] overflow-y-auto flex flex-col gap-8 md:gap-6" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
-              
-              {messages.length === 1 && (
-                <div>
-                  <p className="text-[10px] text-[#BFBFBF] tracking-widest uppercase mb-3 px-1">POPULAR TOPICS</p>
-                  <div className="flex flex-col gap-3 md:gap-2">
-                    <TopicButton onClick={() => handleTopicClick("Website Development")} icon={<Globe className="w-4 h-4 text-[#FF8A00]" strokeWidth={1.5} />} title="Website Development" desc="Modern websites 1-4 pages" />
-                    <TopicButton onClick={() => handleTopicClick("AI Chatbots")} icon={<Bot className="w-4 h-4 text-[#FF8A00]" strokeWidth={1.5} />} title="AI Chatbots" desc="Smart chatbot solutions" />
-                    <TopicButton onClick={() => handleTopicClick("AI Automation")} icon={<Zap className="w-4 h-4 text-[#FF8A00]" strokeWidth={1.5} />} title="AI Automation" desc="Automate your business" />
-                    <TopicButton onClick={() => handleTopicClick("Pricing")} icon={<DollarSign className="w-4 h-4 text-[#FF8A00]" strokeWidth={1.5} />} title="Pricing" desc="Plans & custom quotes" />
-                    <TopicButton onClick={() => handleTopicClick("Contact")} icon={<Mail className="w-4 h-4 text-[#FF8A00]" strokeWidth={1.5} />} title="Contact" desc="Get in touch with us" />
+            {/* Messages Scroll Area */}
+            <div
+              className="p-3.5 sm:p-4 h-[52vh] min-h-[320px] max-h-[440px] overflow-y-auto flex flex-col gap-4"
+              style={{ scrollbarWidth: 'thin', scrollbarColor: '#262626 transparent' }}
+            >
+              {/* Messages list */}
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
+                >
+                  <div
+                    className={`max-w-[88%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap ${
+                      msg.role === 'user'
+                        ? 'bg-[#FF6A00]/15 border border-[#FF6A00]/30 text-white rounded-br-xs'
+                        : 'bg-[#141414] border border-white/8 text-[#D0D0D0] rounded-bl-xs'
+                    }`}
+                  >
+                    {renderMessageContent(msg.text)}
+                  </div>
+                </div>
+              ))}
+
+              {/* Loading indicator */}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-[#141414] border border-white/8 rounded-2xl rounded-bl-xs p-3 flex items-center gap-2">
+                    <Loader2 className="w-3.5 h-3.5 text-[#FF6A00] animate-spin" />
+                    <span className="text-xs text-[#A3A3A3]">Marzy is thinking...</span>
                   </div>
                 </div>
               )}
 
-              <div className="flex flex-col gap-5 md:gap-4">
-                {messages.map((msg) => (
-                  <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[90%] md:max-w-[85%] rounded-2xl md:rounded-xl p-5 md:p-4 relative ${msg.role === 'user' ? 'bg-[#FF8A00]/10 border border-[#FF8A00]/20' : 'bg-[#141414] border border-white/5'}`}>
-                      {msg.role === 'bot' && msg.id === '1' && (
-                        <p className="text-[#FF8A00] font-medium text-sm mb-2 md:mb-1">Hello, I&apos;m Marzverse Assistant.</p>
-                      )}
-                      <p className={`text-[15px] md:text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'user' ? 'text-white' : 'text-[#BFBFBF]'}`}>
-                        {msg.role === 'bot' && msg.id === '1' ? msg.text.split('\n')[1] : msg.text}
-                      </p>
-                      {msg.role === 'bot' && (
-                        <div className="absolute bottom-4 right-4 w-1.5 h-1.5 md:w-1 md:h-1 rounded-full bg-[#FF8A00]"></div>
-                      )}
-                    </div>
+              {/* Quick Actions / Topics Section */}
+              {showTopics && messages.length <= 2 && (
+                <div className="pt-2 border-t border-white/5 flex flex-col gap-2">
+                  <div className="flex items-center justify-between px-1">
+                    <p className="text-[10px] text-[#A3A3A3] tracking-widest uppercase">
+                      QUICK ACTIONS
+                    </p>
+                    {messages.length > 1 && (
+                      <button
+                        onClick={() => setShowTopics(false)}
+                        className="text-[10px] text-[#777777] hover:text-[#A3A3A3]"
+                      >
+                        Hide
+                      </button>
+                    )}
                   </div>
-                ))}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-[#141414] border border-white/5 rounded-xl p-4 flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 text-[#FF8A00] animate-spin" />
-                      <span className="text-sm text-[#BFBFBF]">Thinking...</span>
-                    </div>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <QuickActionButton
+                      icon={<Globe className="w-3.5 h-3.5 text-[#FF6A00]" />}
+                      title="Websites"
+                      onClick={() => handleQuickAction('websites')}
+                    />
+                    <QuickActionButton
+                      icon={<Bot className="w-3.5 h-3.5 text-[#FF6A00]" />}
+                      title="AI Assistants"
+                      onClick={() => handleQuickAction('chatbots')}
+                    />
+                    <QuickActionButton
+                      icon={<Workflow className="w-3.5 h-3.5 text-[#FF6A00]" />}
+                      title="CRM & Automation"
+                      onClick={() => handleQuickAction('automation')}
+                    />
+                    <QuickActionButton
+                      icon={<FolderGit2 className="w-3.5 h-3.5 text-[#FF6A00]" />}
+                      title="Our Projects"
+                      onClick={() => handleQuickAction('projects')}
+                    />
+                    <QuickActionButton
+                      icon={<DollarSign className="w-3.5 h-3.5 text-[#FF6A00]" />}
+                      title="Pricing"
+                      onClick={() => handleQuickAction('pricing')}
+                    />
+                    <QuickActionButton
+                      icon={<Sparkles className="w-3.5 h-3.5 text-[#FF6A00]" />}
+                      title="Start a Project"
+                      highlight
+                      onClick={() => handleQuickAction('start_project')}
+                    />
                   </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
+                </div>
+              )}
+
+              {/* Conversation Footer CTAs (Always Accessible) */}
+              {!showTopics && messages.length > 2 && (
+                <div className="pt-2 flex flex-wrap gap-1.5 justify-end">
+                  <button
+                    onClick={() => handleQuickAction('start_project')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FF6A00]/15 hover:bg-[#FF6A00]/25 border border-[#FF6A00]/40 rounded-lg text-[11px] font-medium text-[#FF6A00] transition-colors cursor-pointer"
+                  >
+                    <span>Start a Project</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                  <a
+                    href="https://wa.me/905441445901?text=Hello%20MarzVerse%2C%20I%E2%80%99m%20interested%20in%20your%20digital%20services.%20I%E2%80%99d%20like%20to%20discuss%20a%20project."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-medium text-[#D0D0D0] hover:text-white transition-colors cursor-pointer"
+                  >
+                    <MessageSquare className="w-3 h-3 text-[#25D366]" />
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input Area */}
-            <div className="p-4 md:p-5 border-t border-white/10 bg-[#0A0A0A]">
+            <div className="p-3 sm:p-3.5 border-t border-white/10 bg-[#0B0B0B]">
               <div className="relative flex items-center">
-                <input 
-                  type="text" 
+                <input
+                  ref={inputRef}
+                  type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Type your question..." 
-                  aria-label="Type your message to AI Assistant"
-                  className="w-full min-w-0 bg-[#141414] border border-white/10 rounded-lg py-3 md:py-3 pl-4 pr-14 text-[15px] md:text-sm text-white placeholder-[#BFBFBF]/50 focus:outline-none focus:border-[#FF8A00]/50 transition-colors"
+                  placeholder="Ask Marzy a question..."
+                  maxLength={1000}
+                  aria-label="Type your message to MarzVerse AI Assistant"
+                  className="w-full min-w-0 bg-[#141414] border border-white/10 rounded-lg py-2.5 pl-3.5 pr-11 text-xs sm:text-sm text-white placeholder-[#707070] focus:outline-none focus:border-[#FF6A00]/60 transition-colors"
                 />
-                <button 
+                <button
                   onClick={() => handleSend(inputValue)}
                   disabled={isLoading || !inputValue.trim()}
                   aria-label="Send message to AI Assistant"
-                  className="absolute right-2 w-9 h-9 md:w-8 md:h-8 bg-[#FF8A00] rounded-md flex items-center justify-center text-white hover:bg-[#FF8A00]/90 transition-colors disabled:opacity-50"
+                  className="absolute right-1 w-8 h-8 bg-[#FF6A00] hover:bg-[#FF8533] rounded-md flex items-center justify-center text-[#050505] font-bold transition-colors disabled:opacity-30 cursor-pointer"
                 >
-                  <Send className="w-4 h-4 md:w-4 md:h-4" strokeWidth={1.5} />
+                  <Send className="w-3.5 h-3.5 text-[#050505]" strokeWidth={2} />
                 </button>
               </div>
-              <div className="mt-3 flex items-center justify-center gap-1.5">
-                <p className="text-[10px] md:text-[10px] text-[#BFBFBF] tracking-wider">We typically reply instantly.</p>
-                <div className="w-1 h-1 rounded-full bg-[#FF8A00]"></div>
+
+              {/* Updated Accurate UI Copy */}
+              <div className="mt-2 flex items-center justify-center gap-1.5 px-1">
+                <p className="text-[10px] text-[#808080] tracking-normal text-center leading-tight">
+                  AI replies instantly. Project enquiries are reviewed by our team.
+                </p>
               </div>
             </div>
           </motion.div>
@@ -204,23 +451,28 @@ export default function Chatbot() {
   );
 }
 
-function TopicButton({ icon, title, desc, onClick }: { icon: React.ReactNode, title: string, desc: string, onClick: () => void }) {
+function QuickActionButton({
+  icon,
+  title,
+  onClick,
+  highlight = false
+}: {
+  icon: React.ReactNode;
+  title: string;
+  onClick: () => void;
+  highlight?: boolean;
+}) {
   return (
-    <button 
-      onClick={onClick} 
-      aria-label={`Ask about ${title}`}
-      className="w-full flex items-center justify-between p-3 rounded-lg bg-[#141414] hover:bg-[#1A1A1A] border border-white/5 transition-colors group text-left min-w-0"
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 p-2 rounded-lg border transition-all text-left min-w-0 cursor-pointer ${
+        highlight
+          ? 'bg-[#FF6A00]/10 hover:bg-[#FF6A00]/20 border-[#FF6A00]/40 text-[#FF6A00]'
+          : 'bg-[#141414] hover:bg-[#1C1C1C] border-white/5 text-[#D0D0D0] hover:text-white'
+      }`}
     >
-      <div className="flex items-center gap-3 min-w-0 flex-1">
-        <div className="w-8 h-8 rounded-full bg-[#FF8A00]/10 flex items-center justify-center shrink-0">
-          {icon}
-        </div>
-        <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-medium text-[#E5E5E5] group-hover:text-white transition-colors truncate">{title}</h4>
-          <p className="text-[11px] text-[#808080] mt-0.5 truncate">{desc}</p>
-        </div>
-      </div>
-      <ChevronRight className="w-4 h-4 text-[#404040] group-hover:text-[#BFBFBF] transition-colors shrink-0" strokeWidth={1.5} />
+      <div className="shrink-0">{icon}</div>
+      <span className="text-[11px] sm:text-xs font-medium truncate">{title}</span>
     </button>
   );
 }
