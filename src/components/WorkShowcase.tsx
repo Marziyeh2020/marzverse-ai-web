@@ -106,7 +106,7 @@ const projects: Project[] = [
     ],
     ctaType: "link",
     ctaText: "View Live Website",
-    url: "https://www.globalbridgehealth.com/",
+    url: "https://globalbridge.marzverse.com/",
     mediaType: "image",
     mediaSrc: "/5.png",
     featured: true,

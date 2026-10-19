@@ -32,7 +32,7 @@ const VERIFIED_URLS = [
   'https://www.sadiesalteration.com/',
   'https://akcetinmuhendislik.com/',
   'https://xn--hacbey-r9a.com/',
-  'https://www.globalbridgehealth.com/',
+  'https://globalbridge.marzverse.com/',
   'https://wa.me/905441445901',
   'mailto:contact@marzverse.com'
 ];

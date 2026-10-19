@@ -23,7 +23,7 @@ When asked for examples or relevant work, recommend the matching verified projec
 - Akçetin Mühendislik: Corporate engineering website with SEO structure, detailed service pages, and fast performance. (URL: https://akcetinmuhendislik.com/)
 - Hacıbey: Mobile ordering web application (PWA) with customer ordering, product management, and admin dashboard. (URL: https://xn--hacbey-r9a.com/ — Note: Always display the name as "Hacıbey", never show punycode as the project name).
 - FaturaAsistan: Private mobile SaaS concept for invoice uploads, AI summaries, and Excel financial reports. (Status: Private Project — do not provide a public URL).
-- Global Bridge Health: Responsive healthcare platform with health cost comparison, clear navigation, and AI chatbot support. (URL: https://www.globalbridgehealth.com/)
+- Global Bridge Health: Responsive healthcare platform with health cost comparison, clear navigation, and AI chatbot support. (URL: https://globalbridge.marzverse.com/)
 
 PROJECT PROCESS (4 Steps):
 1. Discover — Understand your business goals, target audience, and requirements.
